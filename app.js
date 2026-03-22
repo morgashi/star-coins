@@ -30,7 +30,7 @@ logoutBtn.onclick = function() {
     loginScreen.style.display = 'flex'
 }
 
-document.getElementById('addAccountButton').onclick = function() {
+document.getElementById('addAccountBtn').onclick = function() {
     const name = prompt('Account name (e.g. Checking):')
     if (!name) return
     const amount = parseFloat(prompt('Current balance:'))
@@ -58,7 +58,7 @@ function renderAll() {
     netWorth.textContent = '$' + total.toFixed(2)
 
     accountList.innerHTML = accounts.map(a =>
-        `<div class="account-row"
+        `<div class="account-row">
             <span>${a.name}</span>
             <span class="${a.amount >= 0 ? 'pos' : 'neg'}">
                 ${a.amount >= 0 ? '+' : ''}$${a.amount.toFixed(2)}
@@ -81,4 +81,9 @@ function renderAll() {
     ).join('')
 }
 
-
+function showDashboard(username) {
+    document.getElementById('welcomeMsg').textContent = 'Hi, ' + username
+    loginScreen.style.display = 'none'
+    dashboard.style.display = 'block'
+    renderAll()
+}
