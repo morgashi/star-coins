@@ -6,14 +6,15 @@ const welcomeText = document.getElementById("welcomeText")
 const loginScreen = document.getElementById('loginScreen')
 const dashboard = document.getElementById('dashboard')
 
+// 🔁 Check login on page load
 window.onload = function() {
-    const savedUser = this.localStorage.getItem("user")
-    if(savedUser) {
-        showDasboard(savedUser)
+    const savedUser = localStorage.getItem("user")
+    if (savedUser) {
+        showDashboard(savedUser)
     }
 }
 
-
+// 🔐 Login
 loginBtn.onclick = function() {
     const username = usernameInput.value
 
@@ -23,15 +24,23 @@ loginBtn.onclick = function() {
     }
 
     localStorage.setItem("user", username)
-    showDasboard(username)
+    showDashboard(username)
 }
 
-function showDasboard(user) {
+// 🚪 Logout
+logoutBtn.onclick = function() {
+    localStorage.removeItem("user")
+    showLogin()
+}
+
+// 📺 Show dashboard
+function showDashboard(user) {
     loginScreen.style.display = "none"
     dashboard.style.display = "block"
     welcomeText.innerText = "Welcome, " + user
 }
 
+// 🔙 Show login
 function showLogin() {
     dashboard.style.display = "none"
     loginScreen.style.display = "block"
