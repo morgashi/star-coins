@@ -1,12 +1,106 @@
+* {box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
     font-family: Arial, Helvetica, sans-serif;
-    text-align: center;
-    background: #111;
+    background: blue;
     color: white;
 }
 
-input, button {
-    display: block;
-    margin: 10px auto;
+/* LOGIN */
+#loginScreen{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 10px
+}
+#loginScreen h1 {margin-bottom: 10px; }
+#loginScreen input, #loginScreen button {
     padding: 10px;
+    width: 220px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+}
+#loginScreen button{
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* NAV */
+#navbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #1a1a1a;
+    border-bottom:  1px solid #333;
+}
+.nav-brand { font-size: 16px; font-weight: bold; }
+#welcomeMsg { font-size: 13px; color: #aaa; }
+#logoutBtn {
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* MAIN GRID */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 20px 24px;
+}
+
+/* NET WORTH */
+.net-worth-card {
+    background: #222;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+.nw-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+.nw-amount { font-size: 26px; font-weight: bold; }
+
+/* ACCOUNT */
+.account-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 13px;
+}
+.account-row:last-child { border-bottom: none; }
+.pos { color: #4caf87; }
+.neg { color: #e05c5c; }
+
+/* TRANSACTIONS */
+.tx-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 13px;
+}
+.tx-row:last-child { border-bottom: none; }
+.tx-meta { font-size: 11px; color: #666; margin-top: 2px; }
+
+/* BUTTONS */
+.panel button {
+    font-size: 12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: transparent;
+    color: #aaa;
+    cursor: pointer;
 }
