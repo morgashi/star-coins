@@ -29,8 +29,10 @@ loginBtn.onclick = function() {
 
 // 🚪 Logout
 logoutBtn.onclick = function() {
+    alert("clicked")
     localStorage.removeItem("user")
     showLogin()
+}
 }
 
 // 📺 Show dashboard
