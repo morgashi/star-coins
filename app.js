@@ -70,20 +70,70 @@ function renderAll() {
     ? '<p style="color:#555;font-size:13px;">No transactions yet.</p>'
     : transactions.map(t =>
         `<div class="tx-row">
-            <div>
-                <div>${t.desc}</div>
-                <div class="tx-meta">${t.date}</div>
+            <div style='display:flex;align-items:center;gap:10px;">
+                <span style='font-size:20px;>${t.icon || '💳'}</span>
+                <div>
+                    <div>${t.desc}</div>
+                    <div class="tx-meta">${t.date}</div>
+                </div>
             </div>
             <span class="${t.amount >= 0 ? 'pos' : 'neg'}">
-                ${t.amount >= 0 ? '+' : ''}$${t.amount.toFixed(2)}
+                ${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
             </span>
         </div>`
     ).join('')
+
 }
 
 function showDashboard(username) {
     document.getElementById('welcomeMsg').textContent = 'Hi, ' + username
     loginScreen.style.display = 'none'
     dashboard.style.display = 'block'
+    renderAll()
+}
+
+const emojis = ['💳','🛒','🍔','🚗','🏠','💊','🎮','✈️','👗','📱','💡','🎓','💰','🎁','🏋️','🐶']
+
+const emojiGrid = document.getElementById('emojiGrid')
+emojis.forEach(e => {
+    const el = document.createElement('span')
+    el.textContent = e
+    el.className = 'emoji-option' + (e === '💳' ? 'selected' : '')
+    el.onclick = function() {
+        document.querySelectorAll('emoji-option').forEach(x => x.classList.remove('selected'))
+        el.classList.add('selected')
+        document.getElementById('txIcon').value = e
+    }
+    emojiGrid.appendChild(el)
+})
+
+document.getElementById('addTxBtn').onclick = function() {
+    document.getElementById('txDesc').value = ''
+    document.getElementById('txAmount').value = ''
+    document.getElementById('txDate').value = ''
+    document.getElementById('txIcon').value = '💳'
+    document.querySelectorAll('.emoji-option').forEach((x, i) => {
+        x.classList.toggle('selected', i === 0)
+    })
+    document.getElementById('txModal').style.display = 'flex'
+}
+
+document.getElementById('txCancelBtn').onclick = function() {
+    document.getElementById('txModal').style.display = 'none'
+}
+
+document.getElementById('txSaveBtn').onclick = function() {
+    const desc = document.getElementById('txDesc').value.trim()
+    const amount = parseFloat(document.getElementById('txAmount').value)
+    const rawDate = document.getElementById('txDate').value
+    const icon = document.getElementById('txIcon').value
+
+    if (!desc) return alert('Please enter a description.')
+    if (isNaN(amount)) return alert('Please enter a valid amount.')
+    if (!rawDate) return alert('Please select a date.')
+
+    const date = new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    transactions.unshift({ desc, amount, date, icon })
+    document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
