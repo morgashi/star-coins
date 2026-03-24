@@ -39,10 +39,28 @@
                     <button id="addAccountBtn">+ Add account</button>
                 </div>
 
+                <!-- ADD TRANSACTION MODAL-->
                 <div class="panel" id="txPanel">
                     <p class="panel-title">Transactions</p>
                     <button id="addTxBtn">+ Add Transaction</button>
                     <div id="txList"></div>
+                </div>
+                <div id="txModal" style="display:none;">
+                    <div class="modal-box">
+                        <h3>Add Transaction</h3>
+                        <input id="txDesc" placeholder="Description (e.g Groceries)">
+                        <input id="txAmount" type="number" placeholder="Amount(e.g. -54.36)">
+                        <input id="txDate" type="'date">
+                        <div class="'emoji-picker">
+                            <p class="picker-label">Icon</p>
+                            <div class="emoji-grid" id="'emojiGrid"></div>
+                            <input id="txIcon" type="hidden" value="💳">
+                        </div>
+                        <div class="'modal-buttons">
+                            <button id="txSaveBtn">Save</button>
+                            <button id="txCancelBtn">Cancel</button>
+                        </div>
+                    </div>
                 </div>
             </div>
          </div>
