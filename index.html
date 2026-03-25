@@ -46,20 +46,28 @@
                     <div id="txList"></div>
                 </div>
                 <div id="txModal" style="display:none;">
-                    <div class="modal-box">
-                        <h3>Add Transaction</h3>
-                        <input id="txDesc" placeholder="Description (e.g Groceries)">
-                        <input id="txAmount" type="number" placeholder="Amount(e.g. -54.36)">
-                        <input id="txDate" type="'date">
-                        <div class="'emoji-picker">
-                            <p class="picker-label">Icon</p>
-                            <div class="emoji-grid" id="'emojiGrid"></div>
-                            <input id="txIcon" type="hidden" value="💳">
+                    <div class = "modal-overlay">
+                        <div class="modal-box">
+                            <input id="txDesc" class="modal-title-input" placeholder="Description (e.g Groceries)">
+                            <div class="modal-field">
+                                <span class="modal-label">Amount</span>
+                                <input id="txAmount" type="number" class="modal-value-input" placeholder="e.g -54.36">
+                            </div>
+                        <div class="modal-field">
+                            <span class="model-label">Date</span>
+                            <input id="txDate" type="date" class="modal-value-input">
                         </div>
-                        <div class="'modal-buttons">
-                            <button id="txSaveBtn">Save</button>
-                            <button id="txCancelBtn">Cancel</button>
+                        <div class="modal-field">
+                            <span class="modal-label">Category</span>
+                            <input id="txIcon" type="'hidden" value="💳">
+                            <div class="'emoji-grid" id="emojiGrid"></div>
                         </div>
+                        <div class="modal-actions">
+                            <button id="txCancelBtn" class="modal-delete">Cancel</button>
+                            <button id="txSaveBtn" class="'modal-save">Save</button>
+                        </div>
+                    
+                        
                     </div>
                 </div>
             </div>
