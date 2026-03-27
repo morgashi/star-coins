@@ -63,13 +63,17 @@ document.getElementById('addAccountBtn').onclick = function() {
 
 // --- MODAL ---
 function openModal() {
+    editingId = null
     document.getElementById('txDesc').value = ''
     document.getElementById('txAmount').value = ''
     document.getElementById('txDate').value = ''
+    document.getElementById('txMerchant') = ''
+    document.getElementById('txCategory') = ''
     document.getElementById('txIconPreview').style.display = 'none'
     document.getElementById('txIconPreview').src = ''
     document.getElementById('txIconUpload').value = ''
     document.getElementById('txModal').style.display = 'flex'
+    document.getElementById('txDeleteBtn').style.display = 'none'
 }
 
 document.getElementById('addTxBtn').onclick = openModal
@@ -103,11 +107,28 @@ document.getElementById('txSaveBtn').onclick = function() {
     if (!rawDate) return alert('Please select a date.')
 
     const date = new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    transactions.unshift({ desc, amount, date, rawDate, icon })
+    
+    if(editingId !== null) {
+        const index = transactions.findIndex(t => t.id === editingId)
+        transactions[index] = { desc, amount, date, rawDate, icon, id: editingId }
+        editingId = null
+    } else {
+        transactions.unshift({ desc, amount, date, rawDate, icon, id: Date.niw })
+    }
+
     save()
     document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
+    document.getElementById('txDeleteBtn').onclick = function() {
+    if(editingId === null) return
+    transactions = transactions.filter(t => t.id !== editingId)
+    editingId = null
+    save()
+    document.getElementById('txModal').style.display = 'none'
+    renderAll()
+}
+
 
 // --- FILTERS ---
 document.getElementById('txSearch').oninput = renderTxFullList
@@ -182,7 +203,7 @@ function renderTxFullList() {
                         <td>${t.desc}</td>
                         <td>${t.date}</td>
                         <td class="${t.amount >= 0 ? 'pos' : 'neg'}">
-                            ${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
+                            ${t.amount >= 0 ? '+$' : '-$'}$${Math.abs(t.amount).toFixed(2)}
                         </td>
                     </tr>`).join('')}
                 </tbody>
@@ -202,7 +223,7 @@ function txCardHTML(t) {
     const iconHTML = t.icon
         ? `<img class="tx-card-icon" src="${t.icon}">`
         : `<div class="tx-card-icon-placeholder">💳</div>`
-    return `<div class="tx-card">
+    return `<div class="tx-card" onclick="editTransaction(${t.id})" style="cursor:pointer;>
         <div class="tx-card-left">
             ${iconHTML}
             <div>
@@ -211,9 +232,28 @@ function txCardHTML(t) {
             </div>
         </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
-            ${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
+            ${t.amount >= 0 ? '+$' : '-$'}$${Math.abs(t.amount).toFixed(2)}
         </span>
     </div>`
+}
+
+function editTransaction(id) {
+    const t = transactions.find(t => t.id === id)
+    if (!t) return
+    editingId = id
+    document.getElementById('txDesc').value = t.desc
+    document.getElementById('txAmount').value = t.amount
+    document.getElementById('txDate').value = t.rawDate
+    const preview = document.getElementById('txIconPreview')
+    if (t.icon) {
+        preview.src = t.icon
+        preview.style.display = 'block'
+    } else {
+        preview.style.display = 'none'
+        preview.src = ''
+    }
+    document.getElementById('txModal').style.display = 'flex'
+    document.getElementById('txDeleteBtn').style.display = 'block'
 }
 
 // --- TOGGLE VIEW (table vs list) ---
