@@ -14,37 +14,75 @@
             <input id="password" type="password" placeholder="Password">
             <button id="loginBtn">Login</button>
         </div>
-        <!-- HOMEPAGE-->
+        <!-- HOMEPAGE -->
          <div id="dashboard" style="display:none;">
+            <!-- NAVIGATION -->
             <nav id="navbar">
                 <span class="nav-brand">★ Star Coins</span>
                 <div class="nav-links">
-                    <span>Dashboard</span>
+                    <span class="nav-link active" data-page="dashboardPage">Dashboard</span>
+                    <span class="nav-link" data-page="transactionPage">Transactions</span>
+                    <span class="nav-link" data-page="budgetPage">Monthly Budget</span>
+                    <span class="nav-link" data-page="projectionPage">Future Projections</span>
                 </div>
                 <div class="nav-right">
                     <span id="welcomeMsg"></span>
                     <button id="logoutBtn">Logout</button>
                 </div>
             </nav>
-            
-            <div class="main-grid">
-
-                <div class="panel" id="accountsPanel">
-                    <p class="panel-title">Accounts</p>
-                    <div class="net-worth-card">
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboardPage" class="page"></div>
+                <div class="main-grid">
+                    <div class="panel" id="accountsPanel">
+                     <p class="panel-title">Accounts</p>
+                     <div class="net-worth-card">
                         <p class="nw-label">Net worth</p>
                         <p class="nw-amount" id="netWorth">$0.00</p>
                     </div>
                     <div id="accountList"></div>
                     <button id="addAccountBtn">+ Add account</button>
                 </div>
-
-                <!-- ADD TRANSACTION MODAL-->
                 <div class="panel" id="txPanel">
-                    <p class="panel-title">Transactions</p>
+                    <p class="panel-title">Recent Transactions</p>
                     <button id="addTxBtn">+ Add Transaction</button>
                     <div id="txList"></div>
                 </div>
+
+            <!-- TRANSACTION PAGE -->
+            <div id="transactionPage" class="page" style="display:none">
+                <div class="page-container">
+                    <div class="page-header">
+                        <h2 class="page-heading">Transactions</h2>
+                        <button id="addTxBtn2" class="new-btn">New +</button>
+                    </div>
+                    <div class="tx-filters">
+                        <input id="'txSearch" type="text" placeholder="Search by name..." class="search-input">
+                        <div style="display:flex;gap:8px;">
+                            <input id="txFilterFrom" type="date" class="filter date">
+                            <input id="txFilterTo" type="date" class="filter-date">
+                        </div>
+                    </div>
+                    <div id="txFullList"></div>
+                </div>
+            </div>
+
+            <!-- BUDGET PAGE (placeholder) -->
+            <div id="budgetPage" class="page" style="display:none">
+                <div class="page-container">
+                    <h2 class="page-heading">Monthly Budget</h2>
+                    <p style="color:#888;font-size:14px;">Coming Soon.</p>
+                </div>
+            </div>
+            <!-- PROJECTIONS PAGE (placeholder) -->
+            <div id="projectionPage" class="page" style="display:none;">
+                <div class="page-container">
+                    <h2 class="page-heading">Future Projjections</h2>
+                    <p style="color:#888;font-size:14px;">Coming soon.</p>
+                </div>
+            </div>
+
+                <!-- ADD TRANSACTION MODAL-->
+                
                 <div id="txModal" style="display:none;">
                     <div class = "modal-overlay">
                         <div class="modal-box">
@@ -53,23 +91,26 @@
                                 <span class="modal-label">Amount</span>
                                 <input id="txAmount" type="number" class="modal-value-input" placeholder="e.g -54.36">
                             </div>
-                        <div class="modal-field">
-                            <span class="model-label">Date</span>
-                            <input id="txDate" type="date" class="modal-value-input">
+                            <div class="modal-field">
+                                <span class="model-label">Date</span>
+                                <input id="txDate" type="date" class="modal-value-input">
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Icon</span>
+                                <div sstyle="display:flex;align-items:center;gap:8px">
+                                    <img id="txIconPreview" style="width:32px;height:32px;border-radius:6px;object-fit:cover;display:none;">
+                                    <label class="upload-label">
+                                        Choose image
+                                        <input id="txIconUpload" type="file" accept="image/*" style="display:none;">
+                                    </label>
+                                </div>
+                            </div>   
                         </div>
-                        <div class="modal-field">
-                            <span class="modal-label">Category</span>
-                            <input id="txIcon" type="'hidden" value="💳">
-                            <div class="'emoji-grid" id="emojiGrid"></div>
+                            <div class="modal-actions">
+                                <button id="txCancelBtn" class="modal-delete">Cancel</button>
+                                <button id="txSaveBtn" class="'modal-save">Save</button>
                         </div>
-                        <div class="modal-actions">
-                            <button id="txCancelBtn" class="modal-delete">Cancel</button>
-                            <button id="txSaveBtn" class="'modal-save">Save</button>
-                        </div>
-                    
-                        
                     </div>
-                </div>
             </div>
          </div>
 
