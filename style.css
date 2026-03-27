@@ -338,3 +338,20 @@ body {
     color: #888;
     margin-top: 2px;
 }
+
+.tx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px; 
+}
+.tx-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: #888;
+    border-bottom: 1px solid #333;
+    font-weight: 500;
+}
+.tx-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #222;
+}
