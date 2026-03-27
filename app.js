@@ -1,10 +1,17 @@
+document.addEventListener('DOMContentLoaded', function() {
+
 const loginBtn = document.getElementById('loginBtn')
 const logoutBtn = document.getElementById('logoutBtn')
 const loginScreen = document.getElementById('loginScreen')
 const dashboard = document.getElementById('dashboard')
 
-let accounts = []
-let transactions = []
+let accounts = JSON.parse(localStorage.getItem('accounts')) || []
+let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+
+function save() {
+    localStorage.setItem('accounts', JSON.stringify(accounts))
+    localStorage.setItem('transactions', JSON.stringify(transactions))
+}
 
 // --- AUTH ---
 window.onload = function() {
@@ -50,14 +57,12 @@ document.getElementById('addAccountBtn').onclick = function() {
     const amount = parseFloat(prompt('Current balance:'))
     if (isNaN(amount)) return
     accounts.push({ name, amount })
+    save()
     renderAll()
 }
 
-// --- TRANSACTIONS MODAL ---
-document.getElementById('addTxBtn').onclick = openModal
-document.getElementById('addTxBtn2').onclick = openModal
-
-function openModal(){
+// --- MODAL ---
+function openModal() {
     document.getElementById('txDesc').value = ''
     document.getElementById('txAmount').value = ''
     document.getElementById('txDate').value = ''
@@ -66,6 +71,10 @@ function openModal(){
     document.getElementById('txIconUpload').value = ''
     document.getElementById('txModal').style.display = 'flex'
 }
+
+document.getElementById('addTxBtn').onclick = openModal
+document.getElementById('addTxBtn2').onclick = openModal
+
 document.getElementById('txCancelBtn').onclick = function() {
     document.getElementById('txModal').style.display = 'none'
 }
@@ -90,17 +99,22 @@ document.getElementById('txSaveBtn').onclick = function() {
     const icon = preview.style.display !== 'none' ? preview.src : ''
 
     if (!desc) return alert('Please enter a description.')
-    if (isNaN(amount)) return alert('Please enter a valid amount')
+    if (isNaN(amount)) return alert('Please enter a valid amount.')
     if (!rawDate) return alert('Please select a date.')
 
-    const date = new Date(rawDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})
-    transactions.unshift({ desc, amount, date, icon })
-    transactions.unshift({ desc, amount, date, rawDate, icon})
+    const date = new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    transactions.unshift({ desc, amount, date, rawDate, icon })
+    save()
     document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
 
 // --- FILTERS ---
+document.getElementById('txSearch').oninput = renderTxFullList
+document.getElementById('txFilterFrom').onchange = renderTxFullList
+document.getElementById('txFilterTo').onchange = renderTxFullList
+
+// --- RENDER ---
 function renderAll() {
     renderAccounts()
     renderTxList()
@@ -111,7 +125,7 @@ function renderAccounts() {
     const total = accounts.reduce((sum, a) => sum + a.amount, 0)
     document.getElementById('netWorth').textContent = '$' + total.toFixed(2)
     document.getElementById('accountList').innerHTML = accounts.map(a =>
-        `<div class = "account-row">
+        `<div class="account-row">
             <span>${a.name}</span>
             <span class="${a.amount >= 0 ? 'pos' : 'neg'}">
                 ${a.amount >= 0 ? '+' : ''}$${Math.abs(a.amount).toFixed(2)}
@@ -136,43 +150,78 @@ function renderTxFullList() {
         if (search && !t.desc.toLowerCase().includes(search)) return false
         if (from && new Date(t.rawDate) < new Date(from)) return false
         if (to && new Date(t.rawDate) > new Date(to)) return false
+        return true
     })
 
     if (filtered.length === 0) {
         document.getElementById('txFullList').innerHTML =
-        '<p style="color:#555;font-size:13px;">No transactions found.</p>'
+            '<p style="color:#555;font-size:13px;">No transactions found.</p>'
         return
     }
 
     const groups = {}
     filtered.forEach(t => {
         if (!groups[t.date]) groups[t.date] = []
-            groups[t.date].push(t)
-        
+        groups[t.date].push(t)
     })
-
-    document.getElementById('txFullList').innerHTML = Object.entries(groups).map(([date, txs]) =>
-    `<div class="tx-date-group">
-      <p class="tx-date-label">${date}</p>
-      ${txs.map(t => txCardHTML(t)).join('')}
-    </div>`
-  ).join('')
+    if (viewMode === 'table') {
+        document.getElementById('txFullList').innerHTML =
+            `<table class="tx-table">
+                <thead>
+                    <tr>
+                        <th>Icon</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filtered.map(t => `
+                    <tr>
+                        <td>${t.icon ? `<img class="tx-card-icon" src="${t.icon}">` : '💳'}</td>
+                        <td>${t.desc}</td>
+                        <td>${t.date}</td>
+                        <td class="${t.amount >= 0 ? 'pos' : 'neg'}">
+                            ${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`
+    } else {
+        document.getElementById('txFullList').innerHTML = Object.entries(groups).map(([date, txs]) =>
+            `<div class="tx-date-group">
+                <p class="tx-date-label">${date}</p>
+                ${txs.map(t => txCardHTML(t)).join('')}
+            </div>`
+        ).join('')
+}
+    
 }
 
 function txCardHTML(t) {
     const iconHTML = t.icon
-      ? `<img class="tx-card-icon" src="${t.icon}">`
-      : `<div class="tx-card-icon-placeholder">💳</div>`
+        ? `<img class="tx-card-icon" src="${t.icon}">`
+        : `<div class="tx-card-icon-placeholder">💳</div>`
     return `<div class="tx-card">
-      <div class="tx-card-left">
-        ${iconHTML}
-        <div>
-          <div class="tx-card-name">${t.desc}</div>
-          <div class="tx-card-desc">${t.date}</div>
+        <div class="tx-card-left">
+            ${iconHTML}
+            <div>
+                <div class="tx-card-name">${t.desc}</div>
+                <div class="tx-card-desc">${t.date}</div>
+            </div>
         </div>
-      </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
-      ${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
+            ${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
         </span>
-      </div>`
+    </div>`
 }
+
+// --- TOGGLE VIEW (table vs list) ---
+let viewMode = 'list'
+document.getElementById('toggleViewBtn').onclick = function() {
+    viewMode = viewMode === 'list' ? 'table' : 'list'
+    this.textContent = viewMode === 'list' ? 'Table view' : 'List view'
+    renderTxFullList()
+}
+
+})
