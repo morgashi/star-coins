@@ -20,8 +20,8 @@ function showDashboard(username) {
 }
 
 loginBtn.onclick = function() {
-    const username = document.getElementById('username').ariaValueMax.trim()
-    const password = document.getElementById('password').ariaValueMax.trim()
+    const username = document.getElementById('username').value.trim()
+    const password = document.getElementById('password').value.trim()
     if (!username || !password) return alert('Please fill in both fields.')
     localStorage.setItem('user', username)
     showDashboard(username)
@@ -71,7 +71,7 @@ document.getElementById('txCancelBtn').onclick = function() {
 }
 
 document.getElementById('txIconUpload').onchange = function() {
-    const file = this.file[0]
+    const file = this.files[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = function(e) {
@@ -86,7 +86,8 @@ document.getElementById('txSaveBtn').onclick = function() {
     const desc = document.getElementById('txDesc').value.trim()
     const amount = parseFloat(document.getElementById('txAmount').value)
     const rawDate = document.getElementById('txDate').value
-    const icon = document.getElementById('txIconPreview').src || ''
+    const preview = document.getElementById('txIconPreview')
+    const icon = preview.style.display !== 'none' ? preview.src : ''
 
     if (!desc) return alert('Please enter a description.')
     if (isNaN(amount)) return alert('Please enter a valid amount')
@@ -94,6 +95,7 @@ document.getElementById('txSaveBtn').onclick = function() {
 
     const date = new Date(rawDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})
     transactions.unshift({ desc, amount, date, icon })
+    transactions.unshift({ desc, amount, date, rawDate, icon})
     document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
@@ -121,7 +123,7 @@ function renderAccounts() {
 function renderTxList() {
     const txList = document.getElementById('txList')
     txList.innerHTML = transactions.length === 0
-        ? '<p style="color:#55;font-size:13px;">No transactions yet.</p>'
+        ? '<p style="color:#555;font-size:13px;">No transactions yet.</p>'
         : transactions.slice(0, 5).map(t => txCardHTML(t)).join('')
 }
 
@@ -132,8 +134,8 @@ function renderTxFullList() {
 
     let filtered = transactions.filter(t => {
         if (search && !t.desc.toLowerCase().includes(search)) return false
-        if (from && new Date(t.rawDate) < newDate(from)) return false
-        if (to && new Date(t.rawDate) >> new Date(to)) return false
+        if (from && new Date(t.rawDate) < new Date(from)) return false
+        if (to && new Date(t.rawDate) > new Date(to)) return false
     })
 
     if (filtered.length === 0) {
@@ -166,7 +168,7 @@ function txCardHTML(t) {
         ${iconHTML}
         <div>
           <div class="tx-card-name">${t.desc}</div>
-          <div class="tx-card-desc"${t.date}</div>
+          <div class="tx-card-desc">${t.date}</div>
         </div>
       </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
