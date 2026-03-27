@@ -94,8 +94,16 @@
                                 <input id="txAmount" type="number" class="modal-value-input" placeholder="e.g -54.36">
                             </div>
                             <div class="modal-field">
+                                <span class="modal-label">Merchant</span>
+                                <input id="txMerchant" class="modal-value-input" placeholder="Merchant (e.g Netflix)">
+                            </div>
+                            <div class="modal-field">
                                 <span class="modal-label">Date</span>
                                 <input id="txDate" type="date" class="modal-value-input">
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Category</span>
+                                <input id="txCategory" class="modal-value-input" placeholder="Category">
                             </div>
                             <div class="modal-field">
                                 <span class="modal-label">Icon</span>
@@ -109,7 +117,7 @@
                             </div>   
                             
                             <div class="modal-actions">
-                                <button id="txCancelBtn" class="modal-delete">Cancel</button>
+                                <button id="txDeleteBtn" class="modal-delete" style="display:none;">Delete</button>
                                 <button id="txSaveBtn" class="modal-save">Save</button>
                             </div>
                         </div>
