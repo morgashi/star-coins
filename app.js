@@ -7,6 +7,7 @@ const dashboard = document.getElementById('dashboard')
 
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+let editingId = null
 
 function save() {
     localStorage.setItem('accounts', JSON.stringify(accounts))
@@ -67,8 +68,8 @@ function openModal() {
     document.getElementById('txDesc').value = ''
     document.getElementById('txAmount').value = ''
     document.getElementById('txDate').value = ''
-    document.getElementById('txMerchant') = ''
-    document.getElementById('txCategory') = ''
+    document.getElementById('txMerchant').value = ''
+    document.getElementById('txCategory').value = ''
     document.getElementById('txIconPreview').style.display = 'none'
     document.getElementById('txIconPreview').src = ''
     document.getElementById('txIconUpload').value = ''
@@ -79,9 +80,8 @@ function openModal() {
 document.getElementById('addTxBtn').onclick = openModal
 document.getElementById('addTxBtn2').onclick = openModal
 
-document.getElementById('txCancelBtn').onclick = function() {
-    document.getElementById('txModal').style.display = 'none'
-}
+
+
 
 document.getElementById('txIconUpload').onchange = function() {
     const file = this.files[0]
@@ -113,7 +113,7 @@ document.getElementById('txSaveBtn').onclick = function() {
         transactions[index] = { desc, amount, date, rawDate, icon, id: editingId }
         editingId = null
     } else {
-        transactions.unshift({ desc, amount, date, rawDate, icon, id: Date.niw })
+        transactions.unshift({ desc, amount, date, rawDate, icon, id: Date.now })
     }
 
     save()
@@ -149,7 +149,7 @@ function renderAccounts() {
         `<div class="account-row">
             <span>${a.name}</span>
             <span class="${a.amount >= 0 ? 'pos' : 'neg'}">
-                ${a.amount >= 0 ? '+' : ''}$${Math.abs(a.amount).toFixed(2)}
+                ${a.amount >= 0 ? '+' : ''}${Math.abs(a.amount).toFixed(2)}
             </span>
         </div>`
     ).join('')
@@ -203,7 +203,7 @@ function renderTxFullList() {
                         <td>${t.desc}</td>
                         <td>${t.date}</td>
                         <td class="${t.amount >= 0 ? 'pos' : 'neg'}">
-                            ${t.amount >= 0 ? '+$' : '-$'}$${Math.abs(t.amount).toFixed(2)}
+                            ${t.amount >= 0 ? '+$' : '-$'}${Math.abs(t.amount).toFixed(2)}
                         </td>
                     </tr>`).join('')}
                 </tbody>
@@ -223,7 +223,7 @@ function txCardHTML(t) {
     const iconHTML = t.icon
         ? `<img class="tx-card-icon" src="${t.icon}">`
         : `<div class="tx-card-icon-placeholder">💳</div>`
-    return `<div class="tx-card" onclick="editTransaction(${t.id})" style="cursor:pointer;>
+    return `<div class="tx-card" onclick="editTransaction(${t.id})" style="cursor:pointer;">
         <div class="tx-card-left">
             ${iconHTML}
             <div>
