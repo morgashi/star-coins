@@ -113,7 +113,7 @@ document.getElementById('txSaveBtn').onclick = function() {
         transactions[index] = { desc, amount, date, rawDate, icon, id: editingId }
         editingId = null
     } else {
-        transactions.unshift({ desc, amount, date, rawDate, icon, id: Date.now })
+        transactions.unshift({ desc, amount, date, rawDate, icon, id: Date.now() })
     }
 
     save()
