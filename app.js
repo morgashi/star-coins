@@ -232,7 +232,7 @@ function txCardHTML(t) {
             </div>
         </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
-            ${t.amount >= 0 ? '+$' : '-$'}$${Math.abs(t.amount).toFixed(2)}
+            ${t.amount >= 0 ? '+$' : '-$'}${Math.abs(t.amount).toFixed(2)}
         </span>
     </div>`
 }
@@ -263,5 +263,6 @@ document.getElementById('toggleViewBtn').onclick = function() {
     this.textContent = viewMode === 'list' ? 'Table view' : 'List view'
     renderTxFullList()
 }
+window.editTransaction = editTransaction
 
 })
