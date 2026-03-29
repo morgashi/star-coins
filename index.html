@@ -142,11 +142,66 @@
                 </div>
             </div>
 
-            <!-- PROJECTIONS PAGE (placeholder) -->
+            <!-- PROJECTIONS PAGE -->
             <div id="projectionPage" class="page" style="display:none;">
-                <div class="page-container">
-                    <h2 class="page-heading">Future Projections</h2>
-                    <p style="color:#888;font-size:14px;">Coming soon.</p>
+                <div class="page-container" style="max-width:900px;">
+                    <h2 class="page-heading" style="margin-bottom:24px;">Future Projections</h2>
+
+                    <!-- PROJECTED BALANCE -->
+                    <div class="proj-panel">
+                        <p class="proj-panel-title">PROJECTED BALANCE</p>
+                        <div class="proj-inputs">
+                            <div class="proj-input-group">
+                                <label>Monthly Income</label>
+                                <input id="projIncome" type="number" placeholder="e.g. 4000">
+                            </div>
+                            <div class="proj-input-group">
+                                <label>Monthly Spending</label>
+                                <input id="projStartBalance" type="number" placeholder="e.g. 5000">
+                            </div>
+                            <div class="proj-input-group">
+                                <label>Months to project</label>
+                                <input id="projMonths" type="number" placeholder="e.g. 12" min="1" max="60">
+                            </div>
+                        </div>
+                        <button id="projCalcBtn" class="new-btn" style="margin-top:16px;">Calculate</button>
+                        <div id="projResults"></div>
+                    </div>
+
+                    <!-- SAVINGS GOALS -->
+                    <div class="proj-panel" style="margin-top:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <p class="proj-panel-title" style="margin:0">SAVINGS GOALS</p>
+                            <button id="addGoalBtn" class="new-btn">+ Add Goal</button>
+                        </div>
+                        <div id="goalsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADD GOAL MODAL -->
+            <div id="goalModal" style="display:none;">
+                <div class="modal-overlay">
+                    <div class="modal-box">
+                        <input id="goalName" class="modal-title-input" placeholder="Goal name (e.g. Vacation)">
+                        <div class="modal-field">
+                            <span class="modal-label">Target Amount</span>
+                            <input id="goalTarget" type="number" class="modal-value-input" placeholder="e.g. 3000">
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-label">Current Saved</span>
+                            <input id="goalCurrent" type="number" class="modal-value-input" placeholder="e.g. 500">
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-label">Monthly Contributions</span>
+                            <input id="goalContribution" type="number" class="modal-value-input" placeholder="e.g. 200">
+                        </div>
+                        <div class="modal-actions">
+                            <button id="goalDeleteBtn" class="modal-delete" style="display:none;">Delete</button>
+                            <button id="goalCancelBtn" class="toggle-btn">Cancel</button>
+                            <button id="goalSaveBtn" class="modal-save">Save</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
