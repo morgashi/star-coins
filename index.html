@@ -31,24 +31,24 @@
                 </div>
             </nav>
             <!-- DASHBOARD PAGE -->
-        <div id="dashboardPage" class="page">
-            <div class="main-grid">
-                <div class="panel" id="accountsPanel">
-                     <p class="panel-title">Accounts</p>
-                    <div class="net-worth-card">
-                        <p class="nw-label">Net worth</p>
-                        <p class="nw-amount" id="netWorth">$0.00</p>
+            <div id="dashboardPage" class="page">
+                <div class="main-grid">
+                    <div class="panel" id="accountsPanel">
+                        <p class="panel-title">Accounts</p>
+                        <div class="net-worth-card">
+                            <p class="nw-label">Net worth</p>
+                            <p class="nw-amount" id="netWorth">$0.00</p>
+                        </div>
+                        <div id="accountList"></div>
+                        <button id="addAccountBtn">+ Add account</button>
                     </div>
-                    <div id="accountList"></div>
-                    <button id="addAccountBtn">+ Add account</button>
-                </div>
-                <div class="panel" id="txPanel">
-                    <p class="panel-title">Recent Transactions</p>
-                    <button id="addTxBtn">+ Add Transaction</button>
-                    <div id="txList"></div>
+                    <div class="panel" id="txPanel">
+                        <p class="panel-title">Recent Transactions</p>
+                        <button id="addTxBtn">+ Add Transaction</button>
+                        <div id="txList"></div>
+                    </div>
                 </div>
             </div>
-        </div>
             <!-- TRANSACTION PAGE -->
             <div id="transactionsPage" class="page" style="display:none">
                 <div class="page-container">
@@ -68,23 +68,7 @@
                 </div>
             </div>
 
-            <!-- BUDGET PAGE (placeholder) -->
-            <div id="budgetPage" class="page" style="display:none">
-                <div class="page-container">
-                    <h2 class="page-heading">Monthly Budget</h2>
-                    <p style="color:#888;font-size:14px;">Coming Soon.</p>
-                </div>
-            </div>
-            <!-- PROJECTIONS PAGE (placeholder) -->
-            <div id="projectionPage" class="page" style="display:none;">
-                <div class="page-container">
-                    <h2 class="page-heading">Future Projections</h2>
-                    <p style="color:#888;font-size:14px;">Coming soon.</p>
-                </div>
-            </div>
-
-                <!-- ADD TRANSACTION MODAL-->
-                
+            <!-- ADD TRANSACTION MODAL-->
                 <div id="txModal" style="display:none;">
                     <div class = "modal-overlay">
                         <div class="modal-box">
@@ -124,6 +108,48 @@
                         </div>
                     </div>
                 </div>
+
+            <!-- BUDGET PAGE -->
+            <div id="budgetPage" class="page" style="display:none">
+                <div class="page-container" style="max-width:1100px;">
+                    <div class="budget-month-bar">
+                        <select id="budgetMonthSelect" class="month-select"></select>
+                    </div>
+                    <div class="budget-grid">
+                        <!-- CATEGORY BREAKDOWN -->
+                        <div class="budget-panel">
+                            <div class="budget-panel-header">
+                                <span class="budget-panel-title">CATEGORY BREAKDOWN</span>
+                                <div class="toggle-group">
+                                    <button class="toggle-btn active" id="breakdownExpectedBtn">Expected</button>
+                                    <button class="toggle-btn" id="breakdownCurrentBtn">Current</button>
+                                </div>
+                            </div>
+                            <div id="categoryBreakdown"></div>
+                        </div>
+                        <!-- OVERVIEW -->
+                         <div class="budget-panel">
+                            <div class="budget-panel-header">
+                                <span class="budget-panel-title">OVERVIEW</span>
+                                <div class="toggle-group">
+                                    <button class="toggle-btn active" id="overviewExpectedBtn">Expected</button>
+                                    <button class="toggle-btn" id="overviewCurrentBtn">Current</button>
+                                </div>
+                            </div>
+                            <div id="budgetOverview"></div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROJECTIONS PAGE (placeholder) -->
+            <div id="projectionPage" class="page" style="display:none;">
+                <div class="page-container">
+                    <h2 class="page-heading">Future Projections</h2>
+                    <p style="color:#888;font-size:14px;">Coming soon.</p>
+                </div>
+            </div>
+
         </div>
 
     </div>
