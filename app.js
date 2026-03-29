@@ -392,8 +392,8 @@ function renderOverview(month, spending) {
         catTotals[cat.name] = { expected: expCat, current: curCat }
     })
 
-    const expectedNet = income + totalExpectedSpend
-    const currentNet = income + totalCurrentSpend
+    const expectedNet = income - Math.abs(totalExpectedSpend)
+    const currentNet = income - Math.abs(totalCurrentSpend)
 
     let html = `
     <div class="overview-row" style="color:#888;font-size:11px;letter-spacing:0.05em;">
@@ -409,8 +409,8 @@ function renderOverview(month, spending) {
     </div>
     <div class="overview-row bold">
         <span class="overview-row-label">Total Usage</span>
-        <span class="overview-row-val ${totalExpectedSpend !== 0 ? 'neg' : ''}">${totalExpectedSpend !== 0 ? '-$' : '$'}${Math.abs(totalExpectedSpend).toFixed(2)}</span>
-        <span class="overview-row-val ${totalCurrentSpend !== 0 ? 'neg' : ''}">${totalCurrentSpend !== 0 ? '-$' : '$'}${Math.abs(totalCurrentSpend).toFixed(2)}</span>
+        <span class="overview-row-val neg">-$${Math.abs(totalExpectedSpend).toFixed(2)}</span>
+        <span class="overview-row-val neg">-$${Math.abs(totalCurrentSpend).toFixed(2)}</span>
     </div>
     <div class="overview-row bold">
         <span class="overview-row-label">Total Net</span>
@@ -464,5 +464,157 @@ document.getElementById('overviewCurrentBtn').onclick = function() {
     document.getElementById('overviewExpectedBtn').classList.remove('active')
     renderBudget()
 }
+
+// --- PROJECTIONS ---
+let goals = JSON.parse(localStorage.getItem('goals')) || []
+let editingGoalId = null
+
+function saveGoals() {
+    localStorage.setItem('goals', JSON.stringify(goals))
+}
+
+document.getElementById('projCalcBtn').onclick = function() {
+    const income = parseFloat(document.getElementById('projIncome').value) || 0
+    const spending = parseFloat(document.getElementById('projSpending').value) || 0
+    const startBalance = parseFloat(document.getElementById('projStartBalance').value) || 0
+    const months = parseInt(document.getElementById('projMonths').value) || 12
+
+    const monthlySavings = income - spending
+    const finalBalance = startBalance + (monthlySavings * months)
+    const totalSaved = monthlySavings * months
+
+    let tableRows = ''
+    let balance = startBalance
+    for (let i = 1; i <= months; i++) {
+        balance += monthlySavings
+        const d = new Date()
+        d.setMonth(d.getMonth() + i)
+        const month = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        tableRows += `<tr>
+            <td>${month}</td>
+            <td class="pos">+$${monthlySavings.toFixed(2)}</td>
+            <td class="${balance >= 0 ? 'pos' : 'neg'}">${balance >= 0 ? '+$' : '-$'}${Math.abs(balance).toFixed(2)}</td>
+        </tr>`
+    }
+
+    document.getElementById('projResults').innerHTML = `
+        <div class="proj-results-grid">
+            <div class="proj-metric">
+                <div class="proj-metric-label">Monthly savings</div>
+                <div class="proj-metric-value ${monthlySavings >= 0 ? 'pos' : 'neg'}">${monthlySavings >= 0 ? '+$' : '-$'}${Math.abs(monthlySavings).toFixed(2)}</div>
+            </div>
+            <div class="proj-metric">
+                <div class="proj-metric-label">Total saved in ${months} months</div>
+                <div class="proj-metric-value ${totalSaved >= 0 ? 'pos' : 'neg'}">${totalSaved >= 0 ? '+$' : '-$'}${Math.abs(totalSaved).toFixed(2)}</div>
+            </div>
+            <div class="proj-metric">
+                <div class="proj-metric-label">Projected balance</div>
+                <div class="proj-metric-value ${finalBalance >= 0 ? 'pos' : 'neg'}">${finalBalance >= 0 ? '$' : '-$'}${Math.abs(finalBalance).toFixed(2)}</div>
+            </div>
+        </div>
+        <table class="proj-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Saved</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+        </table>`
+}
+
+// GOALS
+function renderGoals() {
+    const container = document.getElementById('goalsList')
+    if (goals.length === 0) {
+        container.innerHTML = '<p style="color:#555;font-size:13px;">No goals yet. Add one!</p>'
+        return
+    }
+    container.innerHTML = goals.map(g => {
+        const pct = Math.min((g.current / g.target) * 100, 100).toFixed(1)
+        const remaining = g.target - g.current
+        const monthsLeft = g.contribution > 0 ? Math.ceil(remaining / g.contribution) : null
+        const eta = monthsLeft ? (() => {
+            const d = new Date()
+            d.setMonth(d.getMonth() + monthsLeft)
+            return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        })() : 'No contribution set'
+
+        return `<div class="goal-card" onclick="editGoal(${g.id})">
+            <div class="goal-header">
+                <span class="goal-name">${g.name}</span>
+                <span class="goal-eta">${pct}% · ${eta}</span>
+            </div>
+            <div class="goal-progress-bar">
+                <div class="goal-progress-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="goal-amounts">
+                <span>$${g.current.toFixed(2)} saved</span>
+                <span>$${g.target.toFixed(2)} goal</span>
+            </div>
+        </div>`
+    }).join('')
+}
+
+document.getElementById('addGoalBtn').onclick = function() {
+    editingGoalId = null
+    document.getElementById('goalName').value = ''
+    document.getElementById('goalTarget').value = ''
+    document.getElementById('goalCurrent').value = ''
+    document.getElementById('goalContribution').value = ''
+    document.getElementById('goalDeleteBtn').style.display = 'none'
+    document.getElementById('goalModal').style.display = 'flex'
+}
+
+document.getElementById('goalCancelBtn').onclick = function() {
+    document.getElementById('goalModal').style.display = 'none'
+    editingGoalId = null
+}
+
+document.getElementById('goalSaveBtn').onclick = function() {
+    const name = document.getElementById('goalName').value.trim()
+    const target = parseFloat(document.getElementById('goalTarget').value)
+    const current = parseFloat(document.getElementById('goalCurrent').value) || 0
+    const contribution = parseFloat(document.getElementById('goalContribution').value) || 0
+
+    if (!name) return alert('Please enter a goal name.')
+    if (isNaN(target) || target <= 0) return alert('Please enter a valid target amount.')
+
+    if (editingGoalId !== null) {
+        const index = goals.findIndex(g => g.id === editingGoalId)
+        goals[index] = { name, target, current, contribution, id: editingGoalId }
+        editingGoalId = null
+    } else {
+        goals.push({ name, target, current, contribution, id: Date.now() })
+    }
+
+    saveGoals()
+    document.getElementById('goalModal').style.display = 'none'
+    renderGoals()
+}
+
+document.getElementById('goalDeleteBtn').onclick = function() {
+    goals = goals.filter(g => g.id !== editingGoalId)
+    editingGoalId = null
+    saveGoals()
+    document.getElementById('goalModal').style.display = 'none'
+    renderGoals()
+}
+
+function editGoal(id) {
+    const g = goals.find(g => g.id === id)
+    if (!g) return
+    editingGoalId = id
+    document.getElementById('goalName').value = g.name
+    document.getElementById('goalTarget').value = g.target
+    document.getElementById('goalCurrent').value = g.current
+    document.getElementById('goalContribution').value = g.contribution
+    document.getElementById('goalDeleteBtn').style.display = 'block'
+    document.getElementById('goalModal').style.display = 'flex'
+}
+window.editGoal = editGoal
+
+renderGoals()
 
 })
