@@ -396,7 +396,13 @@ function renderOverview(month, spending) {
     const currentNet = income + totalCurrentSpend
 
     let html = `
-        <div class="budget-income-row">
+    <div class="overview-row" style="color:#888;font-size:11px;letter-spacing:0.05em;">
+        <span></span>
+        <span style="text-align:right;">EXPECTED</span>
+        <span style="text-align:right;">CURRENT</span>
+    </div>
+    <div class="budget-income-row">`
+        `<div class="budget-income-row">
             <span style="font-size:13px;color:#ccc;>Income</span>
             <input type="number" id="budgetIncomeInput" placeholder="$0"
                 value="${income !== 0 ? income : ''}"
@@ -404,8 +410,8 @@ function renderOverview(month, spending) {
             </div>
             <div class="overiew-row bold">
                 <span class="overview-row-label">Total Usage</span>
-                <span class="overview-row-val neg">-$${Math.abs(totalExpectedSpend).toFixed(2)}</span>
-                <span class="overview-row-val neg">-$${Math.abs(totalCurrentSpend).toFixed(2)}</span>
+                <span class="overview-row-val ${totalExpectedSpend !== 0 ? 'neg' : ''}">${totalExpectedSpend !== 0 ? '-$' : '$'}${Math.abs(totalExpectedSpend).toFixed(2)}</span>
+                <span class="overview-row-val ${totalCurrentSpend !== 0 ? 'neg' : ''}">${totalCurrentSpend !== 0 ? '-$' : '$'}${Math.abs(totalCurrentSpend).toFixed(2)}</span>
             </div>
             <div class="overview-row bold">
                 <span class="overview-row-label">Total Net</span>
@@ -418,8 +424,8 @@ function renderOverview(month, spending) {
             const c = catTotals[cat.name].current
             html += `<div class="overview-row>
                 <span class="overview-row-label>${cat.name}</span>
-                <span class="overview-row-val neg">-$${Math.abs(e).toFixed(2)}</span>
-                <span class="overview-row-val neg">-$${Math.abs(c).toFixed(2)}</span>
+                <span class="overview-row-val ${e !== 0 ? 'neg' : ''}">${e !== 0 ? '-$' : '$'}${Math.abs(e).toFixed(2)}</span>
+                <span class="overview-row-val ${c !== 0 ? 'neg' : ''}">${c !== 0 ? '-$' : '$'}${Math.abs(c).toFixed(2)}</span>
             </div>`
         })
 
@@ -447,7 +453,7 @@ document.getElementById('breakdownCurrentBtn').onclick = function() {
     document.getElementById('breakdownExpectedBtn').classList.remove('active')
     renderBudget()
 }
-document.getElementById('overviewExpectedbtn').onclick = function() {
+document.getElementById('overviewExpectedBtn').onclick = function() {
     overviewMode = 'expected'
     this.classList.add('active')
     document.getElementById('overviewCurrentBtn').classList.remove('active')
