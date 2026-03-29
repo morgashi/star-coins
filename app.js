@@ -112,7 +112,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
-        transactions[index] = { desc, amount, date, rawDate, icon, id: editingId }
+        transactions[index] = { desc, amount, date, rawDate, icon, category, id: editingId }
         editingId = null
     } else {
         transactions.unshift({ desc, amount, date, rawDate, icon, id: Date.now() })
@@ -274,7 +274,7 @@ window.editTransaction = editTransaction
 const BUDGET_CATEGORIES = [
     { name: 'Housing + Utilities', color: '#b8d4f0', items: ['Rent + Fees', 'Utilities', 'Internet Bill', 'Renter\'s Insurance']},
     { name: 'Necessities', color: '#f0d4f0', items: ['Groceries', 'Personal Care', 'Healthcare', 'Gas']},
-    { name: 'Fun', color: 'd4f0e0', items: ['Dining Out', 'Entertainment', 'Shopping']},
+    { name: 'Fun', color: '#d4f0e0', items: ['Dining Out', 'Entertainment', 'Shopping']},
     { name: 'Savings', color: '#f0f0d4', items: ['Emergency Fund', 'Travel Fund', 'Investments']}
 ]
 
@@ -284,7 +284,7 @@ let breakdownMode = 'expected'
 let overviewMode = 'expected'
 
 function saveBudget() {
-    localStorage.setItem('budgetData', JSON.stringify('budgetData')) || {}
+    localStorage.setItem('budgetData', JSON.stringify(budgetData)) || {}
     localStorage.setItem('budgetIncome', JSON.stringify(budgetIncome))
 }
 
@@ -339,7 +339,7 @@ function renderCategoryBreakdown(month, spending) {
     BUDGET_CATEGORIES.forEach(cat => {
         if (!budgetData[month][cat.name]) budgetData[month][cat.name] = {}
         html += `<div class="budget-category-header">
-            <span class="budget-category-pill style="background:${cat.color}22;color:${cat.color}">${cat.name}</span>
+            <span class="budget-category-pill" style="background:${cat.color}22;color:${cat.color}">${cat.name}</span>
         </div>`
 
         cat.items.forEach(item => {
@@ -347,7 +347,7 @@ function renderCategoryBreakdown(month, spending) {
             const current = spending[item] || 0
             const pct = expected !==0 ? Math.abs((current / expected) * 100).toFixed(2) + '%' : '0%'
             html += `<div class="budget-row">
-                <span class="budget-row-name">${item}</span
+                <span class="budget-row-name">${item}</span>
                 <input type="number" class="budget-expected-input"
                     data-month="${month}" data-cat="${cat.name}" data-item="${item}"
                     value="${expected !== 0 ? expected : ''}" placeholder="$0">
@@ -422,7 +422,7 @@ function renderOverview(month, spending) {
             const e = catTotals[cat.name].expected
             const c = catTotals[cat.name].current
             html += `<div class="overview-row">
-                <span class="overview-row-label>${cat.name}</span>
+                <span class="overview-row-label">${cat.name}</span>
                 <span class="overview-row-val ${e !== 0 ? 'neg' : ''}">${e !== 0 ? '-$' : '$'}${Math.abs(e).toFixed(2)}</span>
                 <span class="overview-row-val ${c !== 0 ? 'neg' : ''}">${c !== 0 ? '-$' : '$'}${Math.abs(c).toFixed(2)}</span>
             </div>`
