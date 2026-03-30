@@ -48,6 +48,30 @@
                         <div id="txList"></div>
                     </div>
                 </div>
+                <!-- ACCOUNT DETAIL MODAL -->
+                <div id="accountModal" style="display:none;">
+                    <div class="modal-overlay">
+                        <div class="modal-box">
+                            <input id="accountModalName" class="modal-title-input" placeholder="Account name" readonly>
+                            <div class="modal-field">
+                                <span class="modal-label">Current Balance</span>
+                                <span id="accountModalBalance" class="modal-value-input" style="text-align:right;"></span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Account Type</span>
+                                <span id="accountModalType" class="modal-value-input" style="text-align:right;"></span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Annual Interest Rate</span>
+                                <input id="accountModalInterest" type="number" class="modal-value-input" placeholder="e.g. 4.5">
+                            </div>
+                            <div class="modal-actions">
+                                <button id="accountModalCancelBtn" class="toggle-btn">Close</button>
+                                <button id="accountModalSaveBtn" class="modal-save">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- TRANSACTION PAGE -->
             <div id="transactionsPage" class="page" style="display:none">
