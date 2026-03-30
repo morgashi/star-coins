@@ -49,6 +49,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
         document.querySelectorAll('.page').forEach(p => p.style.display = 'none')
         document.getElementById(link.dataset.page).style.display = 'block'
         if (link.dataset.page === 'budgetPage') renderBudget()
+        if (link.dataset.page === 'projectionPage') renderGoals()
     }
 })
 
@@ -151,7 +152,7 @@ function renderAccounts() {
     const total = accounts.reduce((sum, a) => sum + a.amount, 0)
     document.getElementById('netWorth').textContent = '$' + total.toFixed(2)
     document.getElementById('accountList').innerHTML = accounts.map(a =>
-        `<div class="account-row">
+        `<div class="account-row" onclick="openAccountModal(${a.id})" style="cursor:pointer;">
             <span>${a.name}</span>
             <span class="${a.amount >= 0 ? 'pos' : 'neg'}">
                 ${a.amount >= 0 ? '+' : ''}${Math.abs(a.amount).toFixed(2)}
@@ -616,5 +617,112 @@ function editGoal(id) {
 window.editGoal = editGoal
 
 renderGoals()
+
+// --- PLAID ---
+const SERVER_URL = 'https://star-coins-server-production.up.railway.app'
+
+async function connectBank() {
+    try {
+        const res = await fetch(`${SERVER_URL}/create-link-token`, { method: 'POST' })
+        const data = await res.json()
+        const linkToken = data.link_token
+
+        const handler = Plaid.create({
+            token: linkToken,
+            onSuccess: async function(public_token) {
+                const exchangeRes = await fetch(`${SERVER_URL}/exchange-token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ public_token })
+                })
+                const exchangeData = await exchangeRes.json()
+                const access_token = exchangeData.access_token
+                localStorage.setItem('plaid_access_token', access_token)
+                await fetchBankAccounts(access_token)
+            },
+            onExit: function(err) {
+                if (err) console.error('Plaid exit error:', err)
+            }
+        })
+        handler.open()
+    } catch (err) {
+        console.error('Error connecting bank:', err)
+        alert('Error connecting bank. Please try again.')
+    }
+}
+
+async function fetchBankAccounts(access_token) {
+    try {
+        const balanceRes = await fetch(`${SERVER_URL}/balances`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token })
+        })
+        const balanceData = await balanceRes.json()
+
+        balanceData.accounts.forEach(acc => {
+            const exists = accounts.find(a => a.plaidId === acc.account_id)
+            if (exists) {
+                exists.amount = acc.balances.current
+                exists.available = acc.balances.available
+                exists.type = acc.type
+                exists.subtype = acc.subtype
+            } else {
+                accounts.push({
+                    name: acc.name,
+                    amount: acc.balances.current,
+                    available: acc.balances.available,
+                    type: acc.type,
+                    subtype: acc.subtype,
+                    interestRate: null,
+                    plaidId: acc.account_id,
+                    id: Date.now() + Math.random()
+                })
+            }
+        })
+
+        save()
+        renderAll()
+        alert('Bank accounts synced!')
+    } catch (err) {
+        console.error('Error fetching accounts:', err)
+        alert('Error fetching account data. Please try again.')
+    }
+}
+
+const savedPlaidToken = localStorage.getItem('plaid_access_token')
+if (savedPlaidToken) fetchBankAccounts(savedPlaidToken)
+
+ // --- ACCOUNT DETAIL MODAL ---
+let viewingAccountId = null
+
+function openAccountModal(id) {
+    const a = accounts.find(a => a.id === id)
+    if (!a) return
+    viewingAccountId = id
+    document.getElementById('accountModalName').value = a.name
+    document.getElementById('accountModalBalance').textContent = '$' + Math.abs(a.amount).toFixed(2)
+    document.getElementById('accountModalType').textContent = a.subtype ? `${a.subtype} (${a.type})` : a.type || 'Manual'
+    document.getElementById('accountModalInterest').value = a.interestRate || ''
+    document.getElementById('accountModal').style.display = 'flex'
+}
+
+document.getElementById('accountModalCancelBtn').onclick = function() {
+    document.getElementById('accountModal').style.display = 'none'
+    viewingAccountId = null
+}
+
+document.getElementById('accountModalSaveBtn').onclick = function() {
+    const index = accounts.findIndex(a => a.id === viewingAccountId)
+    if (index === -1) return
+    accounts[index].interestRate = parseFloat(document.getElementById('accountModalInterest').value) || null
+    save()
+    document.getElementById('accountModal').style.display = 'none'
+    renderAll()
+}
+
+window.openAccountModal = openAccountModal
+        
+    
 
 })
