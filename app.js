@@ -152,7 +152,7 @@ function renderAccounts() {
     const total = accounts.reduce((sum, a) => sum + a.amount, 0)
     document.getElementById('netWorth').textContent = '$' + total.toFixed(2)
 
-    const regularAccounts = accounts.filter(a => subtype !== 'credit card' && a.type !== 'credit')
+    const regularAccounts = accounts.filter(a => a.subtype !== 'credit card' && a.type !== 'credit')
     const creditAccounts = accounts.filter(a => a.subtype === 'credit card || a.type === credit')
 
     function accountRowHTML(a) {
