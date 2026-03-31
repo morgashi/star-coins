@@ -722,7 +722,7 @@ document.getElementById('accountModalSaveBtn').onclick = function() {
 }
 
 window.openAccountModal = openAccountModal
-        
+document.getElementById('connectBankBtn').onclick = connectBank        
     
 
 })
