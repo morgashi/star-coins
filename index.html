@@ -4,6 +4,7 @@
     <title>Star Coins</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -147,7 +148,7 @@
 
             <!-- BUDGET PAGE -->
             <div id="budgetPage" class="page" style="display:none">
-                <div class="page-container" style="max-width:1100px;">
+                <div class="page-container" style="max-width: 1100px;">
                     <div class="budget-month-bar">
                         <select id="budgetMonthSelect" class="month-select"></select>
                     </div>
@@ -158,93 +159,63 @@
                                 <span class="budget-panel-title">CATEGORY BREAKDOWN</span>
                                 <div class="toggle-group">
                                     <button class="toggle-btn active" id="breakdownExpectedBtn">Expected</button>
-                                    <button class="toggle-btn" id="breakdownCurrentBtn">Current</button>
+                                    <button class="toggle-btn" id="'breakdownCurrentBtn">Current</button>
                                 </div>
                             </div>
                             <div id="categoryBreakdown"></div>
                         </div>
-                        <!-- OVERVIEW -->
-                         <div class="budget-panel">
+                        <!-- CHARTS OVERVIEW -->
+                        <div class="budget-panel">
                             <div class="budget-panel-header">
                                 <span class="budget-panel-title">OVERVIEW</span>
-                                <div class="toggle-group">
-                                    <button class="toggle-btn active" id="overviewExpectedBtn">Expected</button>
-                                    <button class="toggle-btn" id="overviewCurrentBtn">Current</button>
+                            </div>
+                            <!-- INCOME INPUT -->
+                            <div class="budget-income-row" style="margin-bottom:16px;">
+                                <span style="font-size: 13px;color: #888;">Income</span>
+                                <input type="number" id="budgetIncomeInput" placeholder="$0"
+                                    style="background:transparent;border: none;border-bottom: 1px solid #ddd;color: #111;font-size: 13px;width: 100px;outline: none;text-align: right;">
+                            </div>
+                            <!-- DONUT CHARTS -->
+                            <div style="display: flex;justify-content: space-around;align-items: center;margin-bottom: 20px;">
+                                <div style="text-align: center;">
+                                    <p style="font-size: 11px;color: #888;margin-bottom: 8px;">EXPECTED</p>
+                                    <div style="position: relative;width: 130px;height: 130px;">
+                                        <canvas id="donutExpected"></canvas>
+                                    </div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <p style="font-size: 11px;color: #888;margin-bottom: 8px;">ACTUAL</p>
+                                    <div style="position: relative;width: 130px;height: 130px;">
+                                        <canvas id="donutActual"></canvas>
+                                    </div>
                                 </div>
                             </div>
-                            <div id="budgetOverview"></div>
-                         </div>
+                            <!-- DONUT LEGEND -->
+                            <div id="donutLegend" style="margin-bottom: 20px;"></div>
+                            <!-- MONEY IN / OUT -->
+                            <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;">MONEY IN / MONEY OUT</p>
+                            <div style="display: flex;justify-content: space-around;margin-bottom: 8px;">
+                                <div style="text-align: center;">
+                                    <p style="font-size: 11px;color: #888;">EXPECTED</p>
+                                    <canvas id="moneyInOutExpected" width="120" height="160"></canvas>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <p style="font-size: 11px;color: #888;">ACTUAL</p>
+                                <canvas id="moneyInOutActual" width="120" height="160"></canvas>
+                            </div>
+                        </div>
+                        <!-- WEEKLY SPENDING -->
+                        <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;margin-top: 16px;">WEEKLY SPENDING</p>
+                        <canvas id="weeklySpending" height="120"></canvas>
+                        <div id="weeklySpendingStats" style="text-align: center;font-size: 12px;color: #888;margin-top: 8px;"></div>
                     </div>
                 </div>
             </div>
 
             <!-- PROJECTIONS PAGE -->
-            <div id="projectionPage" class="page" style="display:none;">
-                <div class="page-container" style="max-width:900px;">
-                    <h2 class="page-heading" style="margin-bottom:24px;">Future Projections</h2>
-
-                    <!-- PROJECTED BALANCE -->
-                    <div class="proj-panel">
-                        <p class="proj-panel-title">PROJECTED BALANCE</p>
-                        <div class="proj-inputs">
-                            <div class="proj-input-group">
-                                <label>Monthly Income</label>
-                                <input id="projIncome" type="number" placeholder="e.g. 4000">
-                            </div>
-                            <div class="proj-input-group">
-                                <label>Monthly Spending</label>
-                                <input id="projStartBalance" type="number" placeholder="e.g. 5000">
-                            </div>
-                            <div class="proj-input-group">
-                                <label>Months to project</label>
-                                <input id="projMonths" type="number" placeholder="e.g. 12" min="1" max="60">
-                            </div>
-                        </div>
-                        <button id="projCalcBtn" class="new-btn" style="margin-top:16px;">Calculate</button>
-                        <div id="projResults"></div>
-                    </div>
-
-                    <!-- SAVINGS GOALS -->
-                    <div class="proj-panel" style="margin-top:20px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                            <p class="proj-panel-title" style="margin:0">SAVINGS GOALS</p>
-                            <button id="addGoalBtn" class="new-btn">+ Add Goal</button>
-                        </div>
-                        <div id="goalsList"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ADD GOAL MODAL -->
-            <div id="goalModal" style="display:none;">
-                <div class="modal-overlay">
-                    <div class="modal-box">
-                        <input id="goalName" class="modal-title-input" placeholder="Goal name (e.g. Vacation)">
-                        <div class="modal-field">
-                            <span class="modal-label">Target Amount</span>
-                            <input id="goalTarget" type="number" class="modal-value-input" placeholder="e.g. 3000">
-                        </div>
-                        <div class="modal-field">
-                            <span class="modal-label">Current Saved</span>
-                            <input id="goalCurrent" type="number" class="modal-value-input" placeholder="e.g. 500">
-                        </div>
-                        <div class="modal-field">
-                            <span class="modal-label">Monthly Contributions</span>
-                            <input id="goalContribution" type="number" class="modal-value-input" placeholder="e.g. 200">
-                        </div>
-                        <div class="modal-actions">
-                            <button id="goalDeleteBtn" class="modal-delete" style="display:none;">Delete</button>
-                            <button id="goalCancelBtn" class="toggle-btn">Cancel</button>
-                            <button id="goalSaveBtn" class="modal-save">Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
+        </div>   
     </div>
-
     <script src="app.js"></script>
 </body>
 
