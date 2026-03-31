@@ -151,14 +151,37 @@ function renderAll() {
 function renderAccounts() {
     const total = accounts.reduce((sum, a) => sum + a.amount, 0)
     document.getElementById('netWorth').textContent = '$' + total.toFixed(2)
-    document.getElementById('accountList').innerHTML = accounts.map(a =>
-        `<div class="account-row" onclick="openAccountModal(${a.id})" style="cursor:pointer;">
-            <span>${a.name}</span>
+
+    const regularAccounts = accounts.filter(a => subtype !== 'credit card' && a.type !== 'credit')
+    const creditAccounts = accounts.filter(a => a.subtype === 'credit card || a.type === credit')
+
+    function accountRowHTML(a) {
+        const iconHTML = a.icon
+            ? `<img src = "${a.icon}" style="width:36px;height:36px;border-radius:10px;object-fit:cover;">`
+            : `<div style = "width:36px;height:36px;border-radius:10px;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;color:#888;">?</div>`
+        return `<div class="account-row" onclick="openAccountModal(${a.id})" style="cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                ${iconHTML}
+                <span>${a.name}</span>
+            </div>
             <span class="${a.amount >= 0 ? 'pos' : 'neg'}">
-                ${a.amount >= 0 ? '+' : ''}${Math.abs(a.amount).toFixed(2)}
+                ${a.amount >= 0 ? '+$' : '-$'}${Math.abs(a.amount).toFixed(2)}
             </span>
         </div>`
-    ).join('')
+    }
+
+    let html = ''
+    if(regularAccounts.length > 0) {
+        html += `<div class="account-group-label">Accounts</div>`
+        html += regularAccounts.map(accountRowHTML).join('')
+    }
+    if (creditAccounts.length > 0) {
+        html += `<div class="account-group-label">Credit Cards</div>`
+        html += creditAccounts.map(accountRowHTML).join('')
+    }
+
+    document.getElementById('accountList').innerHTML = html
+        
 }
 
 function renderTxList() {
@@ -285,7 +308,7 @@ let breakdownMode = 'expected'
 let overviewMode = 'expected'
 
 function saveBudget() {
-    localStorage.setItem('budgetData', JSON.stringify(budgetData)) || {}
+    localStorage.setItem('budgetData', JSON.stringify(budgetData)) 
     localStorage.setItem('budgetIncome', JSON.stringify(budgetIncome))
 }
 
@@ -704,6 +727,14 @@ function openAccountModal(id) {
     document.getElementById('accountModalBalance').textContent = '$' + Math.abs(a.amount).toFixed(2)
     document.getElementById('accountModalType').textContent = a.subtype ? `${a.subtype} (${a.type})` : a.type || 'Manual'
     document.getElementById('accountModalInterest').value = a.interestRate || ''
+    const preview = document.getElementById('accountIconPreview')
+    if (a.icon) {
+        preview.src = a.icon
+        preview.style.display = 'block'
+    } else {
+        preview.style.display = 'none'
+        preview.src = ''
+    }
     document.getElementById('accountModal').style.display = 'flex'
 }
 
@@ -716,13 +747,28 @@ document.getElementById('accountModalSaveBtn').onclick = function() {
     const index = accounts.findIndex(a => a.id === viewingAccountId)
     if (index === -1) return
     accounts[index].interestRate = parseFloat(document.getElementById('accountModalInterest').value) || null
+    const preview = document.getElementById('accountIconPreview')
+    if (preview.style.display !== 'none') {
+        accounts[index].icon = preview.src
+    }
     save()
     document.getElementById('accountModal').style.display = 'none'
     renderAll()
 }
 
+document.getElementById('accountIconUpload').onchange = function() {
+    const file = this.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = function(e) {
+        const preview = document.getElementById('accountIconPreview')
+        preview.src = e.target.result
+        preview.style.display = 'block'
+    }
+    reader.readAsDataURL(file)
+}
 window.openAccountModal = openAccountModal
-document.getElementById('connectBankBtn').onclick = connectBank        
+document.getElementById('connectBankBtn').onclick = connectBank
     
 
 })
