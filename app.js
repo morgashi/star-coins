@@ -397,68 +397,173 @@ function renderCategoryBreakdown(month, spending) {
 }
 
 function renderOverview(month, spending) {
-    const container = document.getElementById('budgetOverview')
-    const income = budgetIncome[month] || 0
+   let donutExpectedChart = null
+let donutActualChart = null
+let moneyInOutExpectedChart = null
+let moneyInOutActualChart = null
+let weeklySpendingChart = null
 
-    let totalExpectedSpend = 0
-    let totalCurrentSpend = 0
-    const catTotals = {}
+function renderOverview(month, spending) {
+    const income = budgetIncome[month] || 0
+    document.getElementById('budgetIncomeInput').value = income !== 0 ? income : ''
+
+    document.getElementById('budgetIncomeInput').onchange = function() {
+        budgetIncome[month] = parseFloat(this.value) || 0
+        saveBudget()
+        renderBudget()
+    }
+
+    // Calculate totals per category
+    const catColors = ['#b8b4f0', '#f0d48c', '#f0b4c8', '#f0c8a0']
+    const catLabels = BUDGET_CATEGORIES.map(c => c.name)
+    const expectedTotals = []
+    const actualTotals = []
 
     BUDGET_CATEGORIES.forEach(cat => {
-        let expCat = 0
-        let curCat = 0
-        if (budgetData[month][cat.name]) {
-            Object.values(budgetData[month][cat.name]).forEach(v => expCat += v)
+        let exp = 0
+        let cur = 0
+        if (budgetData[month] && budgetData[month][cat.name]) {
+            Object.values(budgetData[month][cat.name]).forEach(v => exp += Math.abs(v))
         }
-        cat.items.forEach(item => { curCat += spending[item] || 0})
-        totalExpectedSpend += expCat
-        totalCurrentSpend += curCat
-        catTotals[cat.name] = { expected: expCat, current: curCat }
+        cat.items.forEach(item => { cur += Math.abs(spending[item] || 0) })
+        expectedTotals.push(exp)
+        actualTotals.push(cur)
     })
 
-    const expectedNet = income - Math.abs(totalExpectedSpend)
-    const currentNet = income - Math.abs(totalCurrentSpend)
-
-    let html = `
-    <div class="overview-row" style="color:#888;font-size:11px;letter-spacing:0.05em;">
-        <span></span>
-        <span style="text-align:right;">EXPECTED</span>
-        <span style="text-align:right;">CURRENT</span>
-    </div>
-    <div class="budget-income-row">
-        <span style="font-size:13px;color:#ccc;">Income</span>
-        <input type="number" id="budgetIncomeInput" placeholder="$0"
-            value="${income !== 0 ? income : ''}"
-            style="background:transparent;border:none;border-bottom:1px solid #333;color:white;font-size:13px;width:100px;outline:none;text-align:right;">
-    </div>
-    <div class="overview-row bold">
-        <span class="overview-row-label">Total Usage</span>
-        <span class="overview-row-val neg">-$${Math.abs(totalExpectedSpend).toFixed(2)}</span>
-        <span class="overview-row-val neg">-$${Math.abs(totalCurrentSpend).toFixed(2)}</span>
-    </div>
-    <div class="overview-row bold">
-        <span class="overview-row-label">Total Net</span>
-        <span class="overview-row-val ${expectedNet >= 0 ? 'pos' : 'neg'}">${expectedNet >= 0 ? '+$' : '-$'}${Math.abs(expectedNet).toFixed(2)}</span>
-        <span class="overview-row-val ${currentNet >= 0 ? 'pos' : 'neg'}">${currentNet >= 0 ? '+$' : '-$'}${Math.abs(currentNet).toFixed(2)}</span>
-    </div>`
-
-        BUDGET_CATEGORIES.forEach(cat => {
-            const e = catTotals[cat.name].expected
-            const c = catTotals[cat.name].current
-            html += `<div class="overview-row">
-                <span class="overview-row-label">${cat.name}</span>
-                <span class="overview-row-val ${e !== 0 ? 'neg' : ''}">${e !== 0 ? '-$' : '$'}${Math.abs(e).toFixed(2)}</span>
-                <span class="overview-row-val ${c !== 0 ? 'neg' : ''}">${c !== 0 ? '-$' : '$'}${Math.abs(c).toFixed(2)}</span>
-            </div>`
-        })
-
-        container.innerHTML = html
-
-        document.getElementById('budgetIncomeInput').onchange = function() {
-            budgetIncome[month] = parseFloat(this.value) || 0
-            saveBudget()
-            renderBudget()
+    // --- DONUT CHARTS ---
+    const donutConfig = (data, colors) => ({
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{ data, backgroundColor: colors, borderWidth: 0 }]
+        },
+        options: {
+            cutout: '65%',
+            plugins: { legend: { display: false }, tooltip: {
+                callbacks: {
+                    label: ctx => ` ${ctx.label}: $${ctx.raw.toFixed(2)}`
+                }
+            }},
+            responsive: false
         }
+    })
+
+    if (donutExpectedChart) donutExpectedChart.destroy()
+    if (donutActualChart) donutActualChart.destroy()
+    donutExpectedChart = new Chart(document.getElementById('donutExpected'), donutConfig(expectedTotals, catColors))
+    donutActualChart = new Chart(document.getElementById('donutActual'), donutConfig(actualTotals, catColors))
+
+    // Legend
+    document.getElementById('donutLegend').innerHTML = catLabels.map((label, i) => {
+        const expPct = expectedTotals.reduce((a,b)=>a+b,0) > 0
+            ? ((expectedTotals[i] / expectedTotals.reduce((a,b)=>a+b,0)) * 100).toFixed(1)
+            : '0.0'
+        return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:${catColors[i]};"></div>
+                <span style="color:#555;">${label}</span>
+            </div>
+            <span style="color:#888;">${expPct}%</span>
+        </div>`
+    }).join('')
+
+    // --- MONEY IN / OUT ---
+    const totalExpectedSpend = expectedTotals.reduce((a,b)=>a+b,0)
+    const totalActualSpend = actualTotals.reduce((a,b)=>a+b,0)
+
+    const moneyInOutConfig = (moneyIn, moneyOut) => ({
+        type: 'bar',
+        data: {
+            labels: ['MONEY IN', 'MONEY OUT'],
+            datasets: [{
+                data: [moneyIn, moneyOut],
+                backgroundColor: ['#a8d8a8', '#f0b8a8'],
+                borderRadius: 8,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false }, tooltip: {
+                callbacks: { label: ctx => ` $${ctx.raw.toFixed(2)}` }
+            }},
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888' }},
+                y: { display: false }
+            },
+            responsive: false
+        }
+    })
+
+    if (moneyInOutExpectedChart) moneyInOutExpectedChart.destroy()
+    if (moneyInOutActualChart) moneyInOutActualChart.destroy()
+    moneyInOutExpectedChart = new Chart(document.getElementById('moneyInOutExpected'), moneyInOutConfig(income, totalExpectedSpend))
+    moneyInOutActualChart = new Chart(document.getElementById('moneyInOutActual'), moneyInOutConfig(income, totalActualSpend))
+
+    // --- WEEKLY SPENDING ---
+    const now = new Date()
+    const year = now.getFullYear()
+    const monthIndex = now.getMonth()
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+
+    // Build weeks
+    const weeks = []
+    let weekStart = 1
+    while (weekStart <= daysInMonth) {
+        const weekEnd = Math.min(weekStart + 6, daysInMonth)
+        const monthName = now.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+        weeks.push({
+            label: `${monthName} ${weekStart}-${weekEnd}`,
+            start: weekStart,
+            end: weekEnd,
+            total: 0
+        })
+        weekStart += 7
+    }
+
+    // Sum spending per week from transactions
+    transactions.forEach(t => {
+        if (!t.rawDate) return
+        const d = new Date(t.rawDate)
+        const tLabel = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        if (tLabel !== month) return
+        if (t.amount >= 0) return // skip income
+        const day = d.getDate()
+        const week = weeks.find(w => day >= w.start && day <= w.end)
+        if (week) week.total += Math.abs(t.amount)
+    })
+
+    const weeklyTotals = weeks.map(w => w.total)
+    const monthToDate = weeklyTotals.reduce((a,b)=>a+b,0)
+    const weeksWithSpending = weeks.filter(w => w.total > 0).length || 1
+    const avgPerWeek = monthToDate / weeksWithSpending
+
+    if (weeklySpendingChart) weeklySpendingChart.destroy()
+    weeklySpendingChart = new Chart(document.getElementById('weeklySpending'), {
+        type: 'bar',
+        data: {
+            labels: weeks.map(w => w.label),
+            datasets: [{
+                data: weeklyTotals,
+                backgroundColor: '#f0b4c8',
+                borderRadius: 6,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false }, tooltip: {
+                callbacks: { label: ctx => ` $${ctx.raw.toFixed(2)}` }
+            }},
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888' }},
+                y: { display: false }
+            },
+            responsive: true
+        }
+    })
+
+    document.getElementById('weeklySpendingStats').textContent =
+        `Month to date: $${monthToDate.toFixed(2)} · Avg/week: $${avgPerWeek.toFixed(2)}`
+}  
 }
 
 populateMonthSelect()
@@ -489,157 +594,6 @@ document.getElementById('overviewCurrentBtn').onclick = function() {
     renderBudget()
 }
 
-// --- PROJECTIONS ---
-let goals = JSON.parse(localStorage.getItem('goals')) || []
-let editingGoalId = null
-
-function saveGoals() {
-    localStorage.setItem('goals', JSON.stringify(goals))
-}
-
-document.getElementById('projCalcBtn').onclick = function() {
-    const income = parseFloat(document.getElementById('projIncome').value) || 0
-    const spending = parseFloat(document.getElementById('projSpending').value) || 0
-    const startBalance = parseFloat(document.getElementById('projStartBalance').value) || 0
-    const months = parseInt(document.getElementById('projMonths').value) || 12
-
-    const monthlySavings = income - spending
-    const finalBalance = startBalance + (monthlySavings * months)
-    const totalSaved = monthlySavings * months
-
-    let tableRows = ''
-    let balance = startBalance
-    for (let i = 1; i <= months; i++) {
-        balance += monthlySavings
-        const d = new Date()
-        d.setMonth(d.getMonth() + i)
-        const month = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-        tableRows += `<tr>
-            <td>${month}</td>
-            <td class="pos">+$${monthlySavings.toFixed(2)}</td>
-            <td class="${balance >= 0 ? 'pos' : 'neg'}">${balance >= 0 ? '+$' : '-$'}${Math.abs(balance).toFixed(2)}</td>
-        </tr>`
-    }
-
-    document.getElementById('projResults').innerHTML = `
-        <div class="proj-results-grid">
-            <div class="proj-metric">
-                <div class="proj-metric-label">Monthly savings</div>
-                <div class="proj-metric-value ${monthlySavings >= 0 ? 'pos' : 'neg'}">${monthlySavings >= 0 ? '+$' : '-$'}${Math.abs(monthlySavings).toFixed(2)}</div>
-            </div>
-            <div class="proj-metric">
-                <div class="proj-metric-label">Total saved in ${months} months</div>
-                <div class="proj-metric-value ${totalSaved >= 0 ? 'pos' : 'neg'}">${totalSaved >= 0 ? '+$' : '-$'}${Math.abs(totalSaved).toFixed(2)}</div>
-            </div>
-            <div class="proj-metric">
-                <div class="proj-metric-label">Projected balance</div>
-                <div class="proj-metric-value ${finalBalance >= 0 ? 'pos' : 'neg'}">${finalBalance >= 0 ? '$' : '-$'}${Math.abs(finalBalance).toFixed(2)}</div>
-            </div>
-        </div>
-        <table class="proj-table">
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Saved</th>
-                    <th>Balance</th>
-                </tr>
-            </thead>
-            <tbody>${tableRows}</tbody>
-        </table>`
-}
-
-// GOALS
-function renderGoals() {
-    const container = document.getElementById('goalsList')
-    if (goals.length === 0) {
-        container.innerHTML = '<p style="color:#555;font-size:13px;">No goals yet. Add one!</p>'
-        return
-    }
-    container.innerHTML = goals.map(g => {
-        const pct = Math.min((g.current / g.target) * 100, 100).toFixed(1)
-        const remaining = g.target - g.current
-        const monthsLeft = g.contribution > 0 ? Math.ceil(remaining / g.contribution) : null
-        const eta = monthsLeft ? (() => {
-            const d = new Date()
-            d.setMonth(d.getMonth() + monthsLeft)
-            return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-        })() : 'No contribution set'
-
-        return `<div class="goal-card" onclick="editGoal(${g.id})">
-            <div class="goal-header">
-                <span class="goal-name">${g.name}</span>
-                <span class="goal-eta">${pct}% · ${eta}</span>
-            </div>
-            <div class="goal-progress-bar">
-                <div class="goal-progress-fill" style="width:${pct}%"></div>
-            </div>
-            <div class="goal-amounts">
-                <span>$${g.current.toFixed(2)} saved</span>
-                <span>$${g.target.toFixed(2)} goal</span>
-            </div>
-        </div>`
-    }).join('')
-}
-
-document.getElementById('addGoalBtn').onclick = function() {
-    editingGoalId = null
-    document.getElementById('goalName').value = ''
-    document.getElementById('goalTarget').value = ''
-    document.getElementById('goalCurrent').value = ''
-    document.getElementById('goalContribution').value = ''
-    document.getElementById('goalDeleteBtn').style.display = 'none'
-    document.getElementById('goalModal').style.display = 'flex'
-}
-
-document.getElementById('goalCancelBtn').onclick = function() {
-    document.getElementById('goalModal').style.display = 'none'
-    editingGoalId = null
-}
-
-document.getElementById('goalSaveBtn').onclick = function() {
-    const name = document.getElementById('goalName').value.trim()
-    const target = parseFloat(document.getElementById('goalTarget').value)
-    const current = parseFloat(document.getElementById('goalCurrent').value) || 0
-    const contribution = parseFloat(document.getElementById('goalContribution').value) || 0
-
-    if (!name) return alert('Please enter a goal name.')
-    if (isNaN(target) || target <= 0) return alert('Please enter a valid target amount.')
-
-    if (editingGoalId !== null) {
-        const index = goals.findIndex(g => g.id === editingGoalId)
-        goals[index] = { name, target, current, contribution, id: editingGoalId }
-        editingGoalId = null
-    } else {
-        goals.push({ name, target, current, contribution, id: Date.now() })
-    }
-
-    saveGoals()
-    document.getElementById('goalModal').style.display = 'none'
-    renderGoals()
-}
-
-document.getElementById('goalDeleteBtn').onclick = function() {
-    goals = goals.filter(g => g.id !== editingGoalId)
-    editingGoalId = null
-    saveGoals()
-    document.getElementById('goalModal').style.display = 'none'
-    renderGoals()
-}
-
-function editGoal(id) {
-    const g = goals.find(g => g.id === id)
-    if (!g) return
-    editingGoalId = id
-    document.getElementById('goalName').value = g.name
-    document.getElementById('goalTarget').value = g.target
-    document.getElementById('goalCurrent').value = g.current
-    document.getElementById('goalContribution').value = g.contribution
-    document.getElementById('goalDeleteBtn').style.display = 'block'
-    document.getElementById('goalModal').style.display = 'flex'
-}
-window.editGoal = editGoal
-
-renderGoals()
 
 // --- PLAID ---
 const SERVER_URL = 'https://star-coins-server-production.up.railway.app'
