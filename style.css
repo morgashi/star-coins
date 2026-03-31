@@ -2,8 +2,8 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
-    background: #111;
-    color: white;
+    background: #f5f0eb;
+    color: #111;
 }
 
 /* LOGIN */
@@ -15,6 +15,11 @@ body {
     height: 100vh;
     gap: 10px
 }
+#loginScreen input {
+    background: white;
+    color:#111
+}
+
 #loginScreen h1 {margin-bottom: 10px; }
 #loginScreen input, #loginScreen button {
     padding: 10px;
@@ -36,16 +41,17 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 12px 24px;
-    background: #1a1a1a;
+    background: white;
+    color: #111;
     border-bottom:  1px solid #333;
 }
-.nav-brand { font-size: 16px; font-weight: bold; }
-#welcomeMsg { font-size: 13px; color: #aaa; }
+.nav-brand { font-size: 16px; font-weight: bold; color: #111 }
+#welcomeMsg { font-size: 13px; color: #888; }
 #logoutBtn {
     padding: 5px 12px;
     background: transparent;
-    border: 1px solid #555;
-    color: #aaa;
+    border: 1px solid #ddd;
+    color: #888;
     border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
@@ -58,29 +64,42 @@ body {
     gap: 16px;
     padding: 20px 24px;
 }
-
+.panel {
+    background: white;
+    border: 1px solid #e8e8e8;
+}
 /* NET WORTH */
 .net-worth-card {
-    background: #222;
+    background: #f5f0eb;
     border-radius: 8px;
     padding: 14px;
     margin-bottom: 14px;
 }
 .nw-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-.nw-amount { font-size: 26px; font-weight: bold; }
+.nw-amount { font-size: 26px; font-weight: bold; color: #111; }
 
 /* ACCOUNT */
 .account-row {
     display: flex;
     justify-content: space-between;
     padding: 9px 0;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #888;
     font-size: 13px;
+    color: #111
 }
 .account-row:last-child { border-bottom: none; }
 .pos { color: #4caf87; }
 .neg { color: #e05c5c; }
-
+.account-group-label {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: #ffd6e0;
+    color: #c0607a;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 12px 0 8px;
+}
 /* TRANSACTIONS */
 .tx-row {
     display: flex;
@@ -118,7 +137,7 @@ body {
 }
 
 .modal-box {
-    background: #f5f5f3;
+    background: white;
     border-radius: 16px;
     padding: 24px;
     width: 340px;
@@ -254,11 +273,11 @@ body {
 /* NAV LINKS */
 .nav-link{
     font-size: 13px;
-    color: #888;
+    color: #aaa;
     cursor: pointer;
 }
 .nav-link.active {
-    color: white;
+    color: #111;
     font-weight: bold;
 }
 
@@ -272,9 +291,9 @@ body {
 .search-input {
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid #333;
-    background: #1a1a1a;
-    color: white;
+    border: 1px solid #ddd;
+    background: white;
+    color: #111;
     font-size: 13px;
     flex: 1;
     min-width: 180px;
@@ -282,9 +301,9 @@ body {
 .filter-date {
     padding: 8px 10px;
     border-radius: 8px;
-    border: 1px solid #333;
-    background: #1a1a1a;
-    color: white;
+    border: 1px solid #ddd;
+    background: white;
+    color: #111;
     font-size: 13px;
 }
 
@@ -302,8 +321,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: white;
+    border: 1px solid #f0f0f0;
     border-radius: 10px;
     padding: 12px 16px;
     margin-bottom: 8px;
@@ -323,7 +342,7 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    background: #333;
+    background: #f0f0f0;
     display:flex;
     align-items: center;
     justify-content: center;
@@ -332,10 +351,11 @@ body {
 .tx-card-name {
     font-size: 14px;
     font-weight: 500;
+    color: #111;
 }
 .tx-card-desc {
     font-size: 12px;
-    color: #888;
+    color: #aaa;
     margin-top: 2px;
 }
 
@@ -365,9 +385,9 @@ body {
 .month-select {
     padding: 10px 28px;
     border-radius: 999px;
-    border: 1px solid #444;
-    background: #111;
-    color: white;
+    border: 1px solid #ddd;
+    background: white;
+    color: #111;
     font-size: 15px;
     cursor: pointer;
     outline: none;
@@ -379,8 +399,8 @@ body {
     gap: 20px;
 }
 .budget-panel {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: white;
+    border: 1px solid #e8e8e8;
     border-radius: 14px;
     padding: 20px;
 }
@@ -397,7 +417,7 @@ body {
 }
 .toggle-group {
     display: flex;
-    background: #222;
+    background: #f0f0f0;
     border-radius: 8px;
     padding: 3px;
     gap: 2px;
@@ -406,14 +426,14 @@ body {
     padding: 5px 14px;
     border-radius: 6px;
     border: none;
-    background: transparent;
+    background: #888;
     color: #888;
     font-size: 12px;
     cursor: pointer;
 }
 .toggle-btn.active {
-    background: #333;
-    color: white;
+    background: white;
+    color: #111;
     font-weight: bold;
 }
 .budget-category-header {
@@ -499,8 +519,8 @@ body {
 
 /* PROJECTIONS */
 .proj-panel {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: white;
+    border: 1px solid #e8e8e8;
     border-radius: 14px;
     padding: 20px;
 }
@@ -527,9 +547,9 @@ body {
 .proj-input-group input {
     padding: 8px 10px;
     border-radius: 8px;
-    border: 1px solid #333;
-    background: #222;
-    color: white;
+    border: 1px solid #e0e0e0;
+    background: #f5f5f5;
+    color: #111;
     font-size: 13px;
     outline: none;
 }
@@ -540,7 +560,7 @@ body {
     margin-top: 20px;
 }
 .proj-metric {
-    background: #222;
+    background: #f5f0eb;
     border-radius: 8px;
     padding: 14px;
 }
@@ -571,7 +591,7 @@ body {
     border-bottom: 1px solid #222;
 }
 .goal-card {
-    background: #222;
+    background: #f5f5f5;
     border-radius: 10px;
     padding: 16px;
     margin-bottom: 12px;
@@ -587,6 +607,7 @@ body {
 .goal-name {
     font-size: 14px;
     font-weight: 500;
+    color:#111;
 }
 .goal-eta {
     font-size: 12px;
@@ -594,7 +615,7 @@ body {
 }
 .goal-progress-bar {
     height: 6px;
-    background: #333;
+    background: #e0e0e0;
     border-radius: 999px;
     overflow: hidden;
     margin-bottom: 8px;
