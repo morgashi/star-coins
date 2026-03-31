@@ -67,6 +67,16 @@
                                 <span class="modal-label">Annual Interest Rate</span>
                                 <input id="accountModalInterest" type="number" class="modal-value-input" placeholder="e.g. 4.5">
                             </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Icon</span>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <img id="accountIconPreview" style="width:32-x;height:32px;border-radius:6px;object-fit:cover;display:none;">
+                                    <label class="upload-label">
+                                        Choose image
+                                        <input id="accountIconUpload" type="file" accept="image/*" style="display: none;">
+                                    </label>
+                                </div>
+                            </div>
                             <div class="modal-actions">
                                 <button id="accountModalCancelBtn" class="toggle-btn">Close</button>
                                 <button id="accountModalSaveBtn" class="modal-save">Save</button>
