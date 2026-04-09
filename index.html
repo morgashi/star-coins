@@ -159,7 +159,7 @@
                                 <span class="budget-panel-title">CATEGORY BREAKDOWN</span>
                                 <div class="toggle-group">
                                     <button class="toggle-btn active" id="breakdownExpectedBtn">Expected</button>
-                                    <button class="toggle-btn" id="'breakdownCurrentBtn">Current</button>
+                                    <button class="toggle-btn" id="breakdownCurrentBtn">Current</button>
                                 </div>
                             </div>
                             <div id="categoryBreakdown"></div>
@@ -193,28 +193,28 @@
                             <!-- DONUT LEGEND -->
                             <div id="donutLegend" style="margin-bottom: 20px;"></div>
                             <!-- MONEY IN / OUT -->
-                            <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;">MONEY IN / MONEY OUT</p>
-                            <div style="display: flex;justify-content: space-around;margin-bottom: 8px;">
-                                <div style="text-align: center;">
-                                    <p style="font-size: 11px;color: #888;">EXPECTED</p>
+                            <!-- MONEY IN / OUT -->
+                            <p style="font-size:11px;color:#888;letter-spacing:0.08em;margin-bottom:8px;">MONEY IN / MONEY OUT</p>
+                            <div style="display:flex;justify-content:space-around;margin-bottom:8px;">
+                                <div style="text-align:center;">
+                                    <p style="font-size:11px;color:#888;">EXPECTED</p>
                                     <canvas id="moneyInOutExpected" width="120" height="160"></canvas>
                                 </div>
+                                <div style="text-align:center;">
+                                    <p style="font-size:11px;color:#888;">ACTUAL</p>
+                                    <canvas id="moneyInOutActual" width="120" height="160"></canvas>
+                                </div>
                             </div>
-                            <div style="text-align: center;">
-                                <p style="font-size: 11px;color: #888;">ACTUAL</p>
-                                <canvas id="moneyInOutActual" width="120" height="160"></canvas>
-                            </div>
+                            <!-- WEEKLY SPENDING -->
+                            <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;margin-top: 16px;">WEEKLY SPENDING</p>
+                            <canvas id="weeklySpending" height="120"></canvas>
+                            <div id="weeklySpendingStats" style="text-align: center;font-size: 12px;color: #888;margin-top: 8px;"></div>
                         </div>
-                        <!-- WEEKLY SPENDING -->
-                        <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;margin-top: 16px;">WEEKLY SPENDING</p>
-                        <canvas id="weeklySpending" height="120"></canvas>
-                        <div id="weeklySpendingStats" style="text-align: center;font-size: 12px;color: #888;margin-top: 8px;"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- PROJECTIONS PAGE -->
-        </div>   
+            </div> 
+            <!-- PROJECTIONS PAGE --> 
+        </div>
     </div>
     <script src="app.js"></script>
 </body>
