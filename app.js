@@ -566,9 +566,11 @@ function renderOverview(month, spending) {
             }]
         }
     })
-}
+
     document.getElementById('weeklySpendingStats').textContent =
         `Month to date: $${monthToDate.toFixed(2)} · Avg/week: $${avgPerWeek.toFixed(2)}`
+}
+    
   
 
 
