@@ -396,8 +396,8 @@ function renderCategoryBreakdown(month, spending) {
     })
 }
 
-function renderOverview(month, spending) {
-   let donutExpectedChart = null
+
+let donutExpectedChart = null
 let donutActualChart = null
 let moneyInOutExpectedChart = null
 let moneyInOutActualChart = null
@@ -405,7 +405,8 @@ let weeklySpendingChart = null
 
 function renderOverview(month, spending) {
     const income = budgetIncome[month] || 0
-    document.getElementById('budgetIncomeInput').value = income !== 0 ? income : ''
+
+    document.getElementById('budgetIncomeInput').value = income !==0 ? income : ''
 
     document.getElementById('budgetIncomeInput').onchange = function() {
         budgetIncome[month] = parseFloat(this.value) || 0
@@ -413,45 +414,65 @@ function renderOverview(month, spending) {
         renderBudget()
     }
 
-    // Calculate totals per category
     const catColors = ['#b8b4f0', '#f0d48c', '#f0b4c8', '#f0c8a0']
     const catLabels = BUDGET_CATEGORIES.map(c => c.name)
+
     const expectedTotals = []
     const actualTotals = []
 
     BUDGET_CATEGORIES.forEach(cat => {
         let exp = 0
         let cur = 0
-        if (budgetData[month] && budgetData[month][cat.name]) {
+
+        if(budgetData[month] && budgetData[month][cat.name]) {
             Object.values(budgetData[month][cat.name]).forEach(v => exp += Math.abs(v))
         }
-        cat.items.forEach(item => { cur += Math.abs(spending[item] || 0) })
+
+        cat.items.forEach(item => {
+            cur += Math.abs(spending[item]) || 0
+        })
+
         expectedTotals.push(exp)
         actualTotals.push(cur)
     })
 
-    // --- DONUT CHARTS ---
-    const donutConfig = (data, colors) => ({
+    if(donutExpectedChart) donutExpectedChart.destroy()
+    if(donutActualChart) donutActualChart.destroy()
+    
+    donutExpectedChart = new Chart(document.getElementById('donutExpected'), {
         type: 'doughnut',
         data: {
             labels: catLabels,
-            datasets: [{ data, backgroundColor: colors, borderWidth: 0 }]
+            datasets: [{
+                data: expectedTotals,
+                backgroundColor: catColors,
+                borderWidth: 0
+            }]
         },
         options: {
             cutout: '65%',
-            plugins: { legend: { display: false }, tooltip: {
-                callbacks: {
-                    label: ctx => ` ${ctx.label}: $${ctx.raw.toFixed(2)}`
-                }
-            }},
+            plugins: { legend: {display: false }},
+            responsive: false
+        }
+    })
+    //--- DONUT CHARTS ---
+    donutActualChart = new Chart(document.getElementById('donutActual'), {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: actualTotals,
+                backgroundColor: catColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '65%',
+            plugins: { legend: { display:false }},
             responsive: false
         }
     })
 
-    if (donutExpectedChart) donutExpectedChart.destroy()
-    if (donutActualChart) donutActualChart.destroy()
-    donutExpectedChart = new Chart(document.getElementById('donutExpected'), donutConfig(expectedTotals, catColors))
-    donutActualChart = new Chart(document.getElementById('donutActual'), donutConfig(actualTotals, catColors))
 
     // Legend
     document.getElementById('donutLegend').innerHTML = catLabels.map((label, i) => {
@@ -471,34 +492,25 @@ function renderOverview(month, spending) {
     const totalExpectedSpend = expectedTotals.reduce((a,b)=>a+b,0)
     const totalActualSpend = actualTotals.reduce((a,b)=>a+b,0)
 
-    const moneyInOutConfig = (moneyIn, moneyOut) => ({
+    if (moneyInOutExpectedChart) moneyInOutExpectedChart.destroy()
+    if (moneyInOutActualChart) moneyInOutActualChart.destroy()
+ 
+    moneyInOutExpectedChart = new Chart(document.getElementById('moneyInOutExpected'), {
         type: 'bar',
         data: {
-            labels: ['MONEY IN', 'MONEY OUT'],
-            datasets: [{
-                data: [moneyIn, moneyOut],
-                backgroundColor: ['#a8d8a8', '#f0b8a8'],
-                borderRadius: 8,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            plugins: { legend: { display: false }, tooltip: {
-                callbacks: { label: ctx => ` $${ctx.raw.toFixed(2)}` }
-            }},
-            scales: {
-                x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888' }},
-                y: { display: false }
-            },
-            responsive: false
+            labels: ['IN', 'OUT'],
+            datasets: [{data: [income, totalExpectedSpend] }]
         }
     })
 
-    if (moneyInOutExpectedChart) moneyInOutExpectedChart.destroy()
-    if (moneyInOutActualChart) moneyInOutActualChart.destroy()
-    moneyInOutExpectedChart = new Chart(document.getElementById('moneyInOutExpected'), moneyInOutConfig(income, totalExpectedSpend))
-    moneyInOutActualChart = new Chart(document.getElementById('moneyInOutActual'), moneyInOutConfig(income, totalActualSpend))
-
+    moneyInOutActualChart = new Chart(document.getElementById('moneyInOutActual'), {
+        type: 'bar',
+        data: {
+            labels: ['IN', 'OUT'],
+            datasets: [{ data: [income, totalActualSpend] }]
+        }
+    })
+}
     // --- WEEKLY SPENDING ---
     const now = new Date()
     const year = now.getFullYear()
@@ -563,8 +575,8 @@ function renderOverview(month, spending) {
 
     document.getElementById('weeklySpendingStats').textContent =
         `Month to date: $${monthToDate.toFixed(2)} · Avg/week: $${avgPerWeek.toFixed(2)}`
-}  
-}
+  
+
 
 populateMonthSelect()
 document.getElementById('budgetMonthSelect').onchange = renderBudget
