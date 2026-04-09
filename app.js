@@ -320,12 +320,16 @@ function populateMonthSelect() {
     const select = document.getElementById('budgetMonthSelect')
     select.innerHTML = ''
     const now = new Date()
+    
     for (let i = 0; i < 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        
         const opt = document.createElement('option')
             opt.value = label
             opt.textContent = label
+
+            if (i === 0) opt.selected = true
             select.appendChild(opt)      
     }
 }
@@ -429,7 +433,7 @@ function renderOverview(month, spending) {
         }
 
         cat.items.forEach(item => {
-            cur += Math.abs(spending[item]) || 0
+            cur += Math.abs(spending[item] || 0)
         })
 
         expectedTotals.push(exp)
@@ -579,6 +583,7 @@ function renderOverview(month, spending) {
 
 
 populateMonthSelect()
+renderBudget()
 document.getElementById('budgetMonthSelect').onchange = renderBudget
 
 document.getElementById('breakdownExpectedBtn').onclick = function() {
