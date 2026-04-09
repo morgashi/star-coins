@@ -514,7 +514,7 @@ function renderOverview(month, spending) {
             datasets: [{ data: [income, totalActualSpend] }]
         }
     })
-}
+
     // --- WEEKLY SPENDING ---
     const now = new Date()
     const year = now.getFullYear()
@@ -524,6 +524,7 @@ function renderOverview(month, spending) {
     // Build weeks
     const weeks = []
     let weekStart = 1
+    
     while (weekStart <= daysInMonth) {
         const weekEnd = Math.min(weekStart + 6, daysInMonth)
         const monthName = now.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
@@ -561,22 +562,11 @@ function renderOverview(month, spending) {
             datasets: [{
                 data: weeklyTotals,
                 backgroundColor: '#f0b4c8',
-                borderRadius: 6,
-                borderWidth: 0
+
             }]
-        },
-        options: {
-            plugins: { legend: { display: false }, tooltip: {
-                callbacks: { label: ctx => ` $${ctx.raw.toFixed(2)}` }
-            }},
-            scales: {
-                x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888' }},
-                y: { display: false }
-            },
-            responsive: true
         }
     })
-
+}
     document.getElementById('weeklySpendingStats').textContent =
         `Month to date: $${monthToDate.toFixed(2)} · Avg/week: $${avgPerWeek.toFixed(2)}`
   
