@@ -87,7 +87,9 @@ function openModal() {
     document.getElementById('txAmount').value = ''
     document.getElementById('txDate').value = ''
     document.getElementById('txMerchant').value = ''
+    document.getElementById('txCategoryMain').value = ''
     document.getElementById('txCategory').value = ''
+    document.getElementById('txCategory').style.display = 'none'
     document.getElementById('txIconPreview').style.display = 'none'
     document.getElementById('txIconPreview').src = ''
     document.getElementById('txIconUpload').value = ''
@@ -156,7 +158,25 @@ document.getElementById('txDeleteBtn').onclick = function() {
         editingId = null
 }
 
+const CATEGORY_ITEMS = {
+    'Housing + Utilities' : ['Rent + Fees', 'Utilitities', 'Internet Bill', 'Renters Insurance'],
+    'Necessities' : ['Groceries', 'Personal Care', 'Healthcare', 'Gas'],
+    'Fun' : ['Dining Out', 'Entertainment', 'Shopping'],
+    'Savings' : ['Emergency Fund', 'Travel Fund', 'Investments']
+}
 
+document.getElementById('txCategoryMain').onchange = function() {
+    const subSelect = document.getElementById('txCategory')
+    const items = CATEGORY_ITEMS[this.value] || []
+    if (items.length === 0) {
+        subSelect.style.display = 'none'
+        subSelect.value = ''
+        return
+    }
+    subSelect.innerHTML = '<option value="">Select item...</option' +
+        items.map(item => `<option value="${item}">${item}</option>`).join('')
+    subSelect.style.display = 'block'
+}
 // --- FILTERS ---
 document.getElementById('txSearch').oninput = renderTxFullList
 document.getElementById('txFilterFrom').onchange = renderTxFullList
@@ -305,6 +325,19 @@ function editTransaction(id) {
         preview.style.display = 'none'
         preview.src = ''
     }
+
+    const t_category = t.category || ''
+    const mainCat = Object.keys(CATEGORY_ITEMS).find(k => CATEGORY_ITEMS[k].includes(t_category)) || ''
+    document.getElementById('txCategoryMain').value = mainCat
+    if (mainCat) {
+        const subSelect = document.getElementById('txCategory')
+        subSelect.innerHTML = '<option value="">Select item...</option>' +
+            CATEGORY_ITEMS[mainCat].map(item => `<option value="${item}">${item}</option>`)
+        subSelect.style.display = 'block'
+        subSelect.value = t_category
+    } else {
+        document.getElementById('txCategory').style.display = 'none'
+    }
     document.getElementById('txModal').style.display = 'flex'
     document.getElementById('txDeleteBtn').style.display = 'block'
 }
@@ -369,8 +402,8 @@ function getCurrentSpendingForMonth(monthStr) {
         const d = new Date(t.rawDate)
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
         if (label !== monthStr) return
-        const cat = t.category || 'Uncategorized'
-        spending[cat] = (spending[cat] || 0) + t.amount
+        const item = t.category || 'Uncategorized'
+        spending[item] = (spending[item] || 0) + Math.abs(t.amount)
     })
     return spending
 }
@@ -398,11 +431,19 @@ function renderCategoryBreakdown(month, spending) {
             const expected = budgetData[month][cat.name][item] || 0
             const current = spending[item] || 0
             const pct = expected !==0 ? Math.abs((current / expected) * 100).toFixed(2) + '%' : '0%'
+
+            const displayAmount = breakdownMode === 'expected' ? expected : current
+            const displayFormatted = displayAmount !== 0
+                ? (displayAmount > 0 ? '+$' : '-$') + Math.abs(displayAmount).toFixed(2)
+                : '$0'
             html += `<div class="budget-row">
                 <span class="budget-row-name">${item}</span>
-                <input type="number" class="budget-expected-input"
-                    data-month="${month}" data-cat="${cat.name}" data-item="${item}"
-                    value="${expected > 0 ? expected : ''}" placeholder="$0">
+                <div class="budget-input-wrapper">
+                    <span class="budget-dollar">$</span>
+                    <input type="number" class="budget-expected-input"
+                        data-month="${month}" data-cat="${cat.name}" data-item="${item}"
+                        value="${expected > 0 ? expected : ''}" placeholder="$0">
+                </div>
                 <span class="budget-row-current">${current !== 0 ? (current > 0 ? '+$' : '-$') + Math.abs(current).toFixed(2) : '$0'}</span>
                 <span class="budget-row-pct">${pct}</span>
             </div>`
@@ -456,10 +497,9 @@ function renderOverview(month, spending) {
             Object.values(budgetData[month][cat.name]).forEach(v => exp += Math.abs(v))
         }
 
-        
-            cur = Math.abs(spending[cat.name] || 0)
-        
-
+        cat.items.forEach(item => {
+            cur += spending[item] || 0
+        })
         expectedTotals.push(exp)
         actualTotals.push(cur)
     })
