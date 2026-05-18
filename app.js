@@ -605,7 +605,7 @@ document.getElementById('overviewCurrentBtn').onclick = function() {
 
 
 // --- PLAID ---
-const SERVER_URL = 'https://star-coins-server-production.up.railway.app'
+const SERVER_URL = 'https://star-coins-server.onrender.com'
 
 async function connectBank() {
     try {
