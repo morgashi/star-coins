@@ -332,7 +332,7 @@ function editTransaction(id) {
     if (mainCat) {
         const subSelect = document.getElementById('txCategory')
         subSelect.innerHTML = '<option value="">Select item...</option>' +
-            CATEGORY_ITEMS[mainCat].map(item => `<option value="${item}">${item}</option>`)
+            CATEGORY_ITEMS[mainCat].map(item => `<option value="${item}">${item}</option>`).join('')
         subSelect.style.display = 'block'
         subSelect.value = t_category
     } else {
