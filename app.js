@@ -433,7 +433,7 @@ function renderOverview(month, spending) {
         }
 
         cat.items.forEach(item => {
-            cur += Math.abs(spending[item] || 0)
+            cur = Math.abs(spending[cat.name] || 0)
         })
 
         expectedTotals.push(exp)
@@ -803,7 +803,7 @@ function renderInsights() {
         vsEl.textContent = '-'
         vsLabel.textContent = 'No data for last month'
     } else {
-        vsEl.textContent = `${diff >= 0 ? '+' : ''}$${diff.toFixed(2)}`
+        vsEl.textContent = `${diff >= 0 ? '+$' : '-$'}${Math.abs(diff).toFixed(2)}`
         vsEl.style.color = diff >= 0 ? '#e05c5c' : '#4caf87'
         vsLabel.textContent = diff >= 0 ? 'more than last month' : 'less than last month'
     }
