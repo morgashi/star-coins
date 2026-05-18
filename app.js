@@ -779,7 +779,7 @@ function renderInsights() {
         return label === month && t.amount < 0
     })
 
-    const totalSpent = monthTx.reduce((sume,t) => sum + Math.abs(t.amount), 0)
+    const totalSpent = monthTx.reduce((sum,t) => sum + Math.abs(t.amount), 0)
     const daysInMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 0).getDate()
     const dailyAvg = totalSpent / daysInMonth
 
