@@ -31,9 +31,27 @@ function deleteIcon(id) {
 }
 
 // --- AUTH ---
-window.onload = function() {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) showDashboard(savedUser)
+window.onload = async function() {
+    const token = localStorage.getItem('authToken')
+    const username = localStorage.getItem('user')
+    if (!token || !username) return
+
+    try {
+        const res = await fetch(`${SERVER_URL}/verify-token`, {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/json'},
+            body: JSON.stringify({token})
+        })
+        const data = await res.json()
+        if (data.valid) {
+            showDashboard(username)
+        } else {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
+        }
+    } catch (err) {
+        console.error('Token verification failed:', err)
+    }
 }
 
 function showDashboard(username) {
@@ -47,11 +65,25 @@ loginBtn.onclick = function() {
     const username = document.getElementById('username').value.trim()
     const password = document.getElementById('password').value.trim()
     if (!username || !password) return alert('Please fill in both fields.')
-    localStorage.setItem('user', username)
-    showDashboard(username)
+    
+    try {
+        const res = await fetch(`${SERVER_URL}/login`, {
+            method: 'POST',
+            headers:{ 'Content-Type' : 'application/json'},
+            body: JSON.stringify({username, password})
+        })
+        const data = await res.json()
+        if (!res.ok) return alert(data.error || 'Login failed.')
+        localStorage.setItem('authToken', data.token)
+        localStorage.setItem('user', username)
+        showDashboard(username)
+    } catch (err) {
+        alert('Error connecting to server. Please try again.')
+    }
 }
 
 logoutBtn.onclick = function() {
+    localStorage.removeItem('authToken')
     localStorage.removeItem('user')
     dashboard.style.display = 'none'
     loginScreen.style.display = 'flex'
