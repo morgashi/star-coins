@@ -648,6 +648,11 @@ async function fetchBankAccounts(access_token) {
             body: JSON.stringify({ access_token })
         })
         const balanceData = await balanceRes.json()
+        if (!balanceData.accounts) {
+            console.error('Plaid error:' , balanceData)
+            alert('Error syncing accounts. Please try reconnecting your bank.')
+            return
+        }
 
         balanceData.accounts.forEach(acc => {
             const exists = accounts.find(a => a.plaidId === acc.account_id)
@@ -737,7 +742,7 @@ window.openAccountModal = openAccountModal
 document.getElementById('connectBankBtn').onclick = connectBank
     
 
-})
+
 
 // --- SPENDING INSIGHTS ---
 let insightsDonutChart = null
@@ -774,12 +779,12 @@ function renderInsights() {
         return label === month && t.amount < 0
     })
 
-    const totalSpent = month.Tx.reduce((sume,t) => sum + Math.abs(t.amount), 0)
+    const totalSpent = monthTx.reduce((sume,t) => sum + Math.abs(t.amount), 0)
     const daysInMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 0).getDate()
     const dailyAvg = totalSpent / daysInMonth
 
     document.getElementById('insightsTotalSpent').textContent = '$' + totalSpent.toFixed(2)
-    document,getElementById('insightsDailyAvg').textContent = `$${dailyAvg.toFixed(2)} avg/day`
+    document.getElementById('insightsDailyAvg').textContent = `$${dailyAvg.toFixed(2)} avg/day`
     document.getElementById('insightsTxCount').textContent = monthTx.length
 
     //VS last month
@@ -837,11 +842,11 @@ function renderInsights() {
             }
         })
 
-        document.getElementById('insightsDonutLegened').innerHTML = catLabels.map((label, i) => {
+        document.getElementById('insightsDonutLegend').innerHTML = catLabels.map((label, i) => {
             const pct = totalSpent > 0 ? ((catValues[i] / totalSpent) * 100).toFixed(1) : '0.0'
             return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;">
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <div style="width:10px;height:10px;border-radius:50%;background:${catColors[i]};flex-shrink:0;></div>
+                    <div style="width:10px;height:10px;border-radius:50%;background:${catColors[i]};flex-shrink:0;"></div>
                     <span style="color:#555;">${label}</span>
                 </div>
                 <span style="color:#888;">${pct}% · $${catValues[i].toFixed(2)}</span>
@@ -857,7 +862,7 @@ function renderInsights() {
             const iconHTML = t.icon
                 ? `<img src="${t.icon}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">`
                 : `<div style="width:32px;height:32px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;">💳</div>`
-            return `<div class='insights-expense-row">
+            return `<div class="insights-expense-row">
                 <div style="display:flex;align-items:center;gap:10px;">
                     ${iconHTML}
                     <div>
@@ -872,3 +877,5 @@ function renderInsights() {
 
 populateInsightMonthSelect()
 document.getElementById('insightsMonthSelect').onchange = renderInsights
+
+})
