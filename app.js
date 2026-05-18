@@ -142,14 +142,14 @@ document.getElementById('txSaveBtn').onclick = function() {
     document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
-    document.getElementById('txDeleteBtn').onclick = function() {
-        const t = transactions.find(t => t.id === editingId)
-        if (t) deleteIcon(t.id)
-        transactions = transactions.filter(t => t.id !== editingId)
-        editingId = null
-        save()
-        document.getElementById('txModal').style.display = 'none'
-        renderAll()
+document.getElementById('txDeleteBtn').onclick = function() {
+    const t = transactions.find(t => t.id === editingId)
+    if (t) deleteIcon(t.id)
+    transactions = transactions.filter(t => t.id !== editingId)
+    editingId = null
+    save()
+    document.getElementById('txModal').style.display = 'none'
+    renderAll()
 }
     document.getElementById('txCancelBtn').onclick = function() {
         document.getElementById('txModal').style.display = 'none'
@@ -271,8 +271,8 @@ function renderTxFullList() {
 
 function txCardHTML(t) {
     const icon = getIcon(t.id)
-    const iconHTML = t.icon
-        ? `<img class="tx-card-icon" src="${t.icon}">`
+    const iconHTML = icon
+        ? `<img class="tx-card-icon" src="${icon}">`
         : `<div class="tx-card-icon-placeholder">💳</div>`
     return `<div class="tx-card" onclick="editTransaction(${t.id})" style="cursor:pointer;">
         <div class="tx-card-left">
@@ -457,7 +457,7 @@ function renderOverview(month, spending) {
         }
 
         
-        cur = Math.abs(spending[cat.name] || 0)
+            cur = Math.abs(spending[cat.name] || 0)
         
 
         expectedTotals.push(exp)
