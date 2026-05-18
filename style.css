@@ -550,19 +550,14 @@ input[type=number] { -moz-appearance: textfield;}
     border-bottom: 1px solid #ccc;
     width: 80px;
     justify-content: flex-end;
+    gap: 0;
 }
 .budget-dollar {
     font-size: 13px;
-    color: #888;
-    margin-right: 2px;
+    color: #111;
+    margin-right: 0;
+    padding-right: 1px;
 }
 .budget-input-wrapper input {
-    border: none;
-    border-bottom: none;
-    width: 60px;
-    color: #111;
-    font-size: 13px;
-    text-align: right;
-    outline: none;
-    background: transparent;
+    width: 55px;
 }
