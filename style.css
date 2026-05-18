@@ -465,8 +465,8 @@ body {
 .budget-row input {
     background: transparent;
     border: none;
-    border-bottom: 1px solid #333;
-    color: white;
+    border-bottom: 1px solid #ccc;
+    color: #111;
     font-size: 13px;
     width: 80px;
     outline: none;
@@ -537,3 +537,10 @@ body {
     width: 130px !important;
     height: 130px !important;
 }
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] { -moz-appearance: textfield;}
