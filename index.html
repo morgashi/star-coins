@@ -124,7 +124,18 @@
                             </div>
                             <div class="modal-field">
                                 <span class="modal-label">Category</span>
-                                <input id="txCategory" class="modal-value-input" placeholder="Category">
+                                <div style="display: flex;flex-direction: column;align-items: flex-end;gap: 6px;">
+                                    <select id="txCategoryMain" class="modal-value-input">
+                                        <option value="">Select category...</option>
+                                        <option value="'Housing + Utilities">Housing + Utilities</option>
+                                        <option value="Necessities">Necessities</option>
+                                        <option value="Fun">Fun</option>
+                                        <option value="Savings">Savings</option>
+                                    </select>
+                                    <select id="txCategory" class="modal-value-input" style="display:none;">
+                                        <option value="">Select item...</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="modal-field">
                                 <span class="modal-label">Icon</span>
