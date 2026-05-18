@@ -517,3 +517,23 @@ body {
     padding: 2px 4px;
 }
 
+#insightsDonut {
+    width: 200px !important;
+    height: 200px !important;
+}
+.insights-expense-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+.insights-expense-row:last-child {border-bottom: none;}
+.insights-expense-name { color: #111; font-weight: 500;}
+.insights-expense-date { font-size: 11px; color:#aaa; margin-top: 2px; }
+
+#donutExpected, donutActual {
+    width: 130px !important;
+    height: 130px !important;
+}
