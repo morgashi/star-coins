@@ -49,7 +49,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
         document.querySelectorAll('.page').forEach(p => p.style.display = 'none')
         document.getElementById(link.dataset.page).style.display = 'block'
         if (link.dataset.page === 'budgetPage') renderBudget()
-        if (link.dataset.page === 'projectionPage') renderGoals()
+        if (link.dataset.page === 'insightsPage') renderInsights()
     }
 })
 
@@ -526,9 +526,9 @@ function renderOverview(month, spending) {
     })
 
     // --- WEEKLY SPENDING ---
-    const now = new Date()
-    const year = now.getFullYear()
-    const monthIndex = now.getMonth()
+    const selectedDate = new Date(month)
+    const year = selectedDate.getFullYear()
+    const monthIndex = selectedDate.getMonth()
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
 
     // Build weeks
@@ -537,7 +537,7 @@ function renderOverview(month, spending) {
     
     while (weekStart <= daysInMonth) {
         const weekEnd = Math.min(weekStart + 6, daysInMonth)
-        const monthName = now.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+        const monthName = selectedDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
         weeks.push({
             label: `${monthName} ${weekStart}-${weekEnd}`,
             start: weekStart,
@@ -739,3 +739,136 @@ document.getElementById('connectBankBtn').onclick = connectBank
 
 })
 
+// --- SPENDING INSIGHTS ---
+let insightsDonutChart = null
+
+function populateInsightMonthSelect() {
+    const select = document.getElementById('insightsMonthSelect')
+    select.innerHTML = ''
+    const now = new Date()
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const label = d.toLocaleDateString('en-US',{month: 'long', year: 'numeric'})
+        const opt = document.createElement('option')
+        opt.value = label
+        opt.textContent = label
+        if (i === 0) opt.selected = true
+        select.appendChild(opt)
+    }
+}
+
+function getPrevMonth(monthStr) {
+    const d = new Date(monthStr)
+    d.setMonth(d.getMonth() - 1)
+    return d.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})
+}
+
+function renderInsights() {
+    const month = document.getElementById('insightsMonthSelect').value
+    if (!month) return
+
+    const monthTx = transactions.filter(t => {
+        if (!t.rawDate) return false
+        const d = new Date(t.rawDate)
+        const label = d.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})
+        return label === month && t.amount < 0
+    })
+
+    const totalSpent = month.Tx.reduce((sume,t) => sum + Math.abs(t.amount), 0)
+    const daysInMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 0).getDate()
+    const dailyAvg = totalSpent / daysInMonth
+
+    document.getElementById('insightsTotalSpent').textContent = '$' + totalSpent.toFixed(2)
+    document,getElementById('insightsDailyAvg').textContent = `$${dailyAvg.toFixed(2)} avg/day`
+    document.getElementById('insightsTxCount').textContent = monthTx.length
+
+    //VS last month
+    const prevMonth = getPrevMonth(month)
+    const prevTx = transactions.filter (t => {
+        if (!t.rawDate) return false
+        const d = new Date(t.rawDate)
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
+        return label === prevMonth && t.amount < 0
+    })
+    const prevSpent = prevTx.reduce((sum, t) => sum + Math.abs(t.amount), 0)
+    const diff = totalSpent - prevSpent
+    const vsEl = document.getElementById('insightsVsLastMonth')
+    const vsLabel = document.getElementById('insightsVsLastMonthLabel')
+    if (prevSpent === 0) {
+        vsEl.textContent = '-'
+        vsLabel.textContent = 'No data for last month'
+    } else {
+        vsEl.textContent = `${diff >= 0 ? '+' : ''}$${diff.toFixed(2)}`
+        vsEl.style.color = diff >= 0 ? '#e05c5c' : '#4caf87'
+        vsLabel.textContent = diff >= 0 ? 'more than last month' : 'less than last month'
+    }
+
+    //Category totals
+    const catSpending = {}
+    monthTx.forEach(t => {
+        const cat = t.category || 'Uncategorized'
+        catSpending[cat] = (catSpending[cat] || 0) + Math.abs(t.amount)
+    })
+
+    const catLabels = Object.keys(catSpending)
+    const catValues = Object.values(catSpending)
+    const catColors = ['#b8b4f0', '#f0d48c', '#f0b4c8', '#a8d8c8', '#f0b8b8', '#c8d8f0', '#d8f0c8']
+
+    if (insightsDonutChart) insightsDonutChart.destroy()
+
+    if (catLabels.length === 0) {
+        document.getElementById('insightsDonut').getContext('2d').clearRect(0, 0, 200, 200)
+        document.getElementById('insightsDonutLegend').innerHTML = '<p style="color:#aaa;font-size:13px;">No expenses this month.</p>'
+    } else {
+        insightsDonutChart = new Chart(document.getElementById('insightsDonut'), {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: catColors.slice(0, catLabels.length),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '65%',
+                plugins: {legend: {display: false}},
+                responsive: false
+            }
+        })
+
+        document.getElementById('insightsDonutLegened').innerHTML = catLabels.map((label, i) => {
+            const pct = totalSpent > 0 ? ((catValues[i] / totalSpent) * 100).toFixed(1) : '0.0'
+            return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${catColors[i]};flex-shrink:0;></div>
+                    <span style="color:#555;">${label}</span>
+                </div>
+                <span style="color:#888;">${pct}% · $${catValues[i].toFixed(2)}</span>
+            </div>`
+        }).join('')
+    }
+
+    //Biggest expenses
+    const sorted = [...monthTx].sort((a, b) => a.amount - b.amount).slice(0, 8)
+    document.getElementById('insightsBiggest').innerHTML = sorted.length === 0
+        ? '<p style="color:#aaa;font-size:13px;">No expenses this month.</p>'
+        : sorted.map(t => {
+            const iconHTML = t.icon
+                ? `<img src="${t.icon}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">`
+                : `<div style="width:32px;height:32px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;">💳</div>`
+            return `<div class='insights-expense-row">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    ${iconHTML}
+                    <div>
+                        <div class="insights-expense-name">${t.desc}</div>
+                        <div class="insights-expense-date">${t.date} · ${t.category || 'Uncategorized'}</div>
+                    </div>
+                </div>
+                <span class="neg">-$${Math.abs(t.amount).toFixed(2)}</span>
+            </div>`
+        }).join('')
+}
+
+populateInsightMonthSelect()
+document.getElementById('insightsMonthSelect').onchange = renderInsights
