@@ -10,8 +10,24 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || []
 let editingId = null
 
 function save() {
+
+    const txToSave = transactions.map(t => {
+        const {icon, ...rest } = t
+        return rest
+    })
     localStorage.setItem('accounts', JSON.stringify(accounts))
     localStorage.setItem('transactions', JSON.stringify(transactions))
+}
+
+function saveIcon(id, iconData) {
+    if (!iconData) return
+    localStorage.setItem(`icon_${id}`, iconData)
+}
+function getIcon(id) {
+    return localStorage.getItem(`icon_${id}`) || ''
+}
+function deleteIcon(id) {
+    localStorage.removeItem(`icon_${id}`)
 }
 
 // --- AUTH ---
@@ -104,6 +120,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     const preview = document.getElementById('txIconPreview')
     const icon = preview.style.display !== 'none' ? preview.src : ''
     const category = document.getElementById('txCategory').value.trim()
+    const txId = editingId !== null ? editingId : Date.now()
 
     if (!desc) return alert('Please enter a description.')
     if (isNaN(amount)) return alert('Please enter a valid amount.')
@@ -113,10 +130,12 @@ document.getElementById('txSaveBtn').onclick = function() {
     
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
-        transactions[index] = { desc, amount, date, rawDate, icon, category, id: editingId }
+        transactions[index] = { desc, amount, date, rawDate, category, id: editingId }
+        if (icon) saveIcon(editingId, icon)
         editingId = null
     } else {
-        transactions.unshift({ desc, amount, date, rawDate, icon, category, id: Date.now() })
+        transactions.unshift({ desc, amount, date, rawDate, category, id: txId })
+        if (icon) saveIcon(txId, icon)
     }
 
     save()
@@ -124,11 +143,13 @@ document.getElementById('txSaveBtn').onclick = function() {
     renderAll()
 }
     document.getElementById('txDeleteBtn').onclick = function() {
-    transactions = transactions.filter(t => t.id !== editingId)
-    editingId = null
-    save()
-    document.getElementById('txModal').style.display = 'none'
-    renderAll()
+        const t = transactions.find(t => t.id === editingId)
+        if (t) deleteIcon(t.id)
+        transactions = transactions.filter(t => t.id !== editingId)
+        editingId = null
+        save()
+        document.getElementById('txModal').style.display = 'none'
+        renderAll()
 }
     document.getElementById('txCancelBtn').onclick = function() {
         document.getElementById('txModal').style.display = 'none'
@@ -249,6 +270,7 @@ function renderTxFullList() {
 }
 
 function txCardHTML(t) {
+    const icon = getIcon(t.id)
     const iconHTML = t.icon
         ? `<img class="tx-card-icon" src="${t.icon}">`
         : `<div class="tx-card-icon-placeholder">💳</div>`
@@ -273,6 +295,8 @@ function editTransaction(id) {
     document.getElementById('txDesc').value = t.desc
     document.getElementById('txAmount').value = t.amount
     document.getElementById('txDate').value = t.rawDate
+    document.getElementById('txCategory').value = t.category || ''
+    const icon = getIcon(t.id)
     const preview = document.getElementById('txIconPreview')
     if (t.icon) {
         preview.src = t.icon
@@ -378,7 +402,7 @@ function renderCategoryBreakdown(month, spending) {
                 <span class="budget-row-name">${item}</span>
                 <input type="number" class="budget-expected-input"
                     data-month="${month}" data-cat="${cat.name}" data-item="${item}"
-                    value="${expected !== 0 ? expected : ''}" placeholder="$0">
+                    value="${expected > 0 ? expected : ''}" placeholder="$0">
                 <span class="budget-row-current">${current !== 0 ? (current > 0 ? '+$' : '-$') + Math.abs(current).toFixed(2) : '$0'}</span>
                 <span class="budget-row-pct">${pct}</span>
             </div>`
@@ -859,8 +883,8 @@ function renderInsights() {
     document.getElementById('insightsBiggest').innerHTML = sorted.length === 0
         ? '<p style="color:#aaa;font-size:13px;">No expenses this month.</p>'
         : sorted.map(t => {
-            const iconHTML = t.icon
-                ? `<img src="${t.icon}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">`
+            const iconHTML = getIcon(t.id)
+                ? `<img src="${getIcon(t.id)}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">`
                 : `<div style="width:32px;height:32px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;">💳</div>`
             return `<div class="insights-expense-row">
                 <div style="display:flex;align-items:center;gap:10px;">
