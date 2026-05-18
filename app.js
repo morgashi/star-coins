@@ -152,8 +152,8 @@ function renderAccounts() {
     const total = accounts.reduce((sum, a) => sum + a.amount, 0)
     document.getElementById('netWorth').textContent = '$' + total.toFixed(2)
 
-    const regularAccounts = accounts.filter(a => a.subtype !== 'credit card && a.type !== credit')
-    const creditAccounts = accounts.filter(a => a.subtype === 'credit card || a.type === credit')
+    const regularAccounts = accounts.filter(a => a.subtype !== 'credit card' && a.type !== 'credit')
+    const creditAccounts = accounts.filter(a => a.subtype === 'credit card' || a.type === 'credit')
 
     function accountRowHTML(a) {
         const iconHTML = a.icon
@@ -503,7 +503,12 @@ function renderOverview(month, spending) {
         type: 'bar',
         data: {
             labels: ['IN', 'OUT'],
-            datasets: [{data: [income, totalExpectedSpend] }]
+            datasets: [{data: [income, totalExpectedSpend], backgroundColor: ['#a8d8a8', '#f0b8a8'], borderRadius: 8, borderWidth: 0 }]
+        },
+        options: {
+            plugins: {legend: {display: false} },
+            scales: {x: { grid: {display: false}, ticks: { font: {size: 10}, color: '#888'}}, y: {display: false}},
+            responsive: false
         }
     })
 
@@ -511,7 +516,12 @@ function renderOverview(month, spending) {
         type: 'bar',
         data: {
             labels: ['IN', 'OUT'],
-            datasets: [{ data: [income, totalActualSpend] }]
+            datasets: [{ data: [income, totalActualSpend], backgroundColor: ['#a8d8a8', '#f0b8a8'], borderRadius: 8, borderWidth: 0 }]
+        },
+        options: {
+            plugins: { legend: { display: false}},
+            scales: {x:{grid: {display:false}, ticks: {font:{size:10}, color:'#888'}}, y: {display: false}},
+            responsive: false
         }
     })
 
@@ -562,8 +572,12 @@ function renderOverview(month, spending) {
             datasets: [{
                 data: weeklyTotals,
                 backgroundColor: '#f0b4c8',
-
             }]
+        },
+        options: {
+            plugins: {legend: {display: false}},
+            scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888' }}, y: { display: false }},
+            responsive: true
         }
     })
 
@@ -590,18 +604,7 @@ document.getElementById('breakdownCurrentBtn').onclick = function() {
     document.getElementById('breakdownExpectedBtn').classList.remove('active')
     renderBudget()
 }
-document.getElementById('overviewExpectedBtn').onclick = function() {
-    overviewMode = 'expected'
-    this.classList.add('active')
-    document.getElementById('overviewCurrentBtn').classList.remove('active')
-    renderBudget()
-}
-document.getElementById('overviewCurrentBtn').onclick = function() {
-    overviewMode = 'current'
-    this.classList.add('active')
-    document.getElementById('overviewExpectedBtn').classList.remove('active')
-    renderBudget()
-}
+
 
 
 // --- PLAID ---
@@ -735,3 +738,4 @@ document.getElementById('connectBankBtn').onclick = connectBank
     
 
 })
+
