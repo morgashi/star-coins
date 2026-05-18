@@ -453,7 +453,7 @@ body {
     grid-template-columns: 1.5fr 1fr 1fr 0.7fr;
     align-items: center;
     padding: 8px 0;
-    border-bottom: 1px dotted #2a2a2a;
+    border-bottom: 1px dotted #e0e0e0;
     font-size: 13px;
     gap: 8px;
 }
