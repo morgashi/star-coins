@@ -456,9 +456,9 @@ function renderOverview(month, spending) {
             Object.values(budgetData[month][cat.name]).forEach(v => exp += Math.abs(v))
         }
 
-        cat.items.forEach(item => {
-            cur = Math.abs(spending[cat.name] || 0)
-        })
+        
+        cur = Math.abs(spending[cat.name] || 0)
+        
 
         expectedTotals.push(exp)
         actualTotals.push(cur)
