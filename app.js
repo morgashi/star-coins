@@ -61,7 +61,7 @@ function showDashboard(username) {
     renderAll()
 }
 
-loginBtn.onclick = function() {
+loginBtn.onclick = async function() {
     const username = document.getElementById('username').value.trim()
     const password = document.getElementById('password').value.trim()
     if (!username || !password) return alert('Please fill in both fields.')
