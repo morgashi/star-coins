@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
 
 const loginBtn = document.getElementById('loginBtn')
 const logoutBtn = document.getElementById('logoutBtn')
@@ -8,6 +8,33 @@ const dashboard = document.getElementById('dashboard')
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
 let editingId = null
+
+// --- PLAID / SERVER ---
+const SERVER_URL = 'https://star-coins-server.onrender.com'
+
+// --- AUTH ---
+const token = localStorage.getItem('authToken')
+const username = localStorage.getItem('user')
+    if (token && username) {
+    try {
+        const res = await fetch(`${SERVER_URL}/verify-token`, {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/json'},
+            body: JSON.stringify({token})
+        })
+        const data = await res.json()
+        if (data.valid) {
+            showDashboard(username)
+        } else {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
+        }
+    } catch (err) {
+        console.error('Token verification failed:', err)
+    }
+}
+
+
 
 function save() {
 
@@ -30,29 +57,7 @@ function deleteIcon(id) {
     localStorage.removeItem(`icon_${id}`)
 }
 
-// --- AUTH ---
-window.onload = async function() {
-    const token = localStorage.getItem('authToken')
-    const username = localStorage.getItem('user')
-    if (!token || !username) return
 
-    try {
-        const res = await fetch(`${SERVER_URL}/verify-token`, {
-            method: 'POST',
-            headers: {'Content-Type' : 'application/json'},
-            body: JSON.stringify({token})
-        })
-        const data = await res.json()
-        if (data.valid) {
-            showDashboard(username)
-        } else {
-            localStorage.removeItem('authToken')
-            localStorage.removeItem('user')
-        }
-    } catch (err) {
-        console.error('Token verification failed:', err)
-    }
-}
 
 function showDashboard(username) {
     document.getElementById('welcomeMsg').textContent = 'Hi, ' + username
@@ -704,7 +709,6 @@ document.getElementById('breakdownCurrentBtn').onclick = function() {
 
 
 // --- PLAID ---
-const SERVER_URL = 'https://star-coins-server.onrender.com'
 
 async function connectBank() {
     try {
