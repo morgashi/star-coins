@@ -8,6 +8,7 @@ const dashboard = document.getElementById('dashboard')
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
 let editingId = null
+let viewMode = 'list'
 
 // --- PLAID / SERVER ---
 const SERVER_URL = 'https://star-coins-server.onrender.com'
@@ -43,7 +44,7 @@ function save() {
         return rest
     })
     localStorage.setItem('accounts', JSON.stringify(accounts))
-    localStorage.setItem('transactions', JSON.stringify(transactions))
+    localStorage.setItem('transactions', JSON.stringify(txToSave))
 }
 
 function saveIcon(id, iconData) {
@@ -117,6 +118,14 @@ document.getElementById('addAccountBtn').onclick = function() {
     renderAll()
 }
 
+document.getElementById('accountDeleteBtn').onclick = function() {
+    if (viewingAccountId === null) return
+    accounts = accounts.filter(a => a.id !== viewingAccountId)
+    viewingAccountId = null
+    save()
+    document.getElementById('accountModal').style.display = 'none'
+    renderAll()
+}
 // --- MODAL ---
 function openModal() {
     editingId = null
@@ -196,7 +205,7 @@ document.getElementById('txDeleteBtn').onclick = function() {
 }
 
 const CATEGORY_ITEMS = {
-    'Housing + Utilities' : ['Rent + Fees', 'Utilitities', 'Internet Bill', 'Renters Insurance'],
+    'Housing + Utilities' : ['Rent + Fees', 'Utilities', 'Internet Bill', 'Renters Insurance'],
     'Necessities' : ['Groceries', 'Personal Care', 'Healthcare', 'Gas'],
     'Fun' : ['Dining Out', 'Entertainment', 'Shopping'],
     'Savings' : ['Emergency Fund', 'Travel Fund', 'Investments']
@@ -210,7 +219,7 @@ document.getElementById('txCategoryMain').onchange = function() {
         subSelect.value = ''
         return
     }
-    subSelect.innerHTML = '<option value="">Select item...</option' +
+    subSelect.innerHTML = '<option value="">Select item...</option'> +
         items.map(item => `<option value="${item}">${item}</option>`).join('')
     subSelect.style.display = 'block'
 }
@@ -355,7 +364,7 @@ function editTransaction(id) {
     document.getElementById('txCategory').value = t.category || ''
     const icon = getIcon(t.id)
     const preview = document.getElementById('txIconPreview')
-    if (t.icon) {
+    if (icon) {
         preview.src = t.icon
         preview.style.display = 'block'
     } else {
@@ -380,7 +389,6 @@ function editTransaction(id) {
 }
 
 // --- TOGGLE VIEW (table vs list) ---
-let viewMode = 'list'
 document.getElementById('toggleViewBtn').onclick = function() {
     viewMode = viewMode === 'list' ? 'table' : 'list'
     this.textContent = viewMode === 'list' ? 'Table view' : 'List view'
@@ -557,7 +565,8 @@ function renderOverview(month, spending) {
         options: {
             cutout: '65%',
             plugins: { legend: {display: false }},
-            responsive: false
+            responsive: true,
+            maintainAspectRatio: false
         }
     })
     //--- DONUT CHARTS ---
@@ -574,7 +583,8 @@ function renderOverview(month, spending) {
         options: {
             cutout: '65%',
             plugins: { legend: { display:false }},
-            responsive: false
+            responsive: true,
+            maintainAspectRatio: false
         }
     })
 
@@ -777,7 +787,6 @@ async function fetchBankAccounts(access_token) {
 
         save()
         renderAll()
-        alert('Bank accounts synced!')
     } catch (err) {
         console.error('Error fetching accounts:', err)
         alert('Error fetching account data. Please try again.')
