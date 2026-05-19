@@ -447,6 +447,10 @@ body {
     justify-content: center;
     margin-bottom: 28px;
 }
+.budget-expected-input {
+    color: #111 !important;
+    opacity: 1 !important;
+}
 .month-select {
     padding: 10px 28px;
     border-radius: 999px;
