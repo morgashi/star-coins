@@ -26,7 +26,7 @@ body {
     padding: 10px 16px;
     width: 260px;
     border-radius: 999px;
-    border: 0.5 px solid #ddd8f5;
+    border: 0.5px solid #ddd8f5;
     background: white;
     font-size: 14px;
     color: #2c2c2a;
@@ -254,7 +254,7 @@ body {
 
 /* TX DATE GROUPS */
 .tx-date-group { margin-bottom: 16px; }
-.tx-merchant-label {
+.tx-date-label {
     font-size: 11px;
     color: #888780;
     text-align: center;
@@ -306,8 +306,8 @@ body {
 }
 .tx-table td {
     padding: 10px 12px;
-    border-bottom: 0.5 dotted black;
-    border-top: 0.5 dotted black;
+    border-bottom: 0.5px dotted black;
+    border-top: 0.5px dotted black;
 }
 
 /* TOGGLE BUTTONS */
@@ -685,4 +685,9 @@ input[type=number] { -moz-appearance: textfield; }
     align-items: center;
     justify-content: center;
     z-index: 999;
+}
+.tx-card-desc {
+    font-size: 11px;
+    color: #888780;
+    margin-top: 2px;
 }
