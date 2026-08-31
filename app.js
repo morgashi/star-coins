@@ -230,6 +230,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     if (!desc) return alert('Please enter a description.')
     if (isNaN(amount)) return alert('Please enter a valid amount.')
     if (!rawDate) return alert('Please select a date.')
+    if(!category) return alert('Please select a category.')
 
     const date = new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     
@@ -276,7 +277,7 @@ document.getElementById('txCategoryMain').onchange = function() {
         subSelect.value = ''
         return
     }
-    subSelect.innerHTML = '<option value="">Select item...</option'> +
+    subSelect.innerHTML = '<option value="">Select item...</option>' +
         items.map(item => `<option value="${item}">${item}</option>`).join('')
     subSelect.style.display = 'block'
 }
