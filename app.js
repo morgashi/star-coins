@@ -4,6 +4,13 @@ const loginBtn = document.getElementById('loginBtn')
 const logoutBtn = document.getElementById('logoutBtn')
 const loginScreen = document.getElementById('loginScreen')
 const dashboard = document.getElementById('dashboard')
+const signupScreen = document.getElementById('signupScreen')
+const showSignupBtn = document.getElementById('showSignupBtn')
+const backToLoginBtn = document.getElementById('backToLoginBtn')
+const signupUsername = document.getElementById('signupUsername')
+const signupPassword = document.getElementById('signupPassword')
+const signupPasswordConfirm = document.getElementById('signupPasswordConfirm')
+const signupBtn = document.getElementById('signupBtn')
 
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
@@ -95,6 +102,56 @@ logoutBtn.onclick = function() {
     loginScreen.style.display = 'flex'
 }
 
+showSignupBtn.onclick = function() {
+    loginScreen.style.display = 'none'
+    signupScreen.style.display = 'block'
+}
+
+backToLoginBtn.onclick = function() {
+    signupScreen.style.display = 'none'
+    loginScreen.style.display = 'block'
+}
+
+signupBtn.onclick = async function() {
+    const username = signupUsername.value.trim()
+    const password = signupPassword.value
+    const confirmPassword = signupPasswordConfirm.value
+
+    if (username === '' || password === ''){
+        alert('Please entere a username and password')
+        return
+    }
+    if (password !== confirmPassword) {
+        alert('Passwords do not match')
+        return
+    }
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters')
+        return
+    }
+    try{
+        const response = await fetch(`${SERVER_URL}/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password
+            })
+        })
+        const data = await response.json()
+        if(!response.ok) {
+            alert(data.error || 'Could not create account')
+            return
+        }
+        console.log('Password hash:', data.passwordHash)
+        alert('Account created! Check the console for your password hash.')
+    } catch (error) {
+        console.error(error)
+        alert('Could not connect to the server')
+    }
+}
 // --- NAV ---
 document.querySelectorAll('.nav-link').forEach(link => {
     link.onclick = function() {
