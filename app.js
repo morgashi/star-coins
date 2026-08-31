@@ -262,7 +262,7 @@ document.getElementById('txDeleteBtn').onclick = function() {
 }
 
 const CATEGORY_ITEMS = {
-    'Housing + Utilities' : ['Rent + Fees', 'Utilities', 'Internet Bill', 'Renters Insurance'],
+    'Housing + Utilities' : ['Rent + Fees', 'Utilities', 'Internet Bill', "Renter's Insurance"],
     'Necessities' : ['Groceries', 'Personal Care', 'Healthcare', 'Gas'],
     'Fun' : ['Dining Out', 'Entertainment', 'Shopping'],
     'Savings' : ['Emergency Fund', 'Travel Fund', 'Investments']
@@ -504,6 +504,7 @@ function getCurrentSpendingForMonth(monthStr) {
         const d = new Date(t.rawDate)
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
         if (label !== monthStr) return
+        if (t.amount >=0) return
         const item = t.category || 'Uncategorized'
         spending[item] = (spending[item] || 0) + Math.abs(t.amount)
     })
@@ -524,7 +525,9 @@ function renderCategoryBreakdown(month, spending) {
     let html = ''
 
     BUDGET_CATEGORIES.forEach(cat => {
-        if (!budgetData[month][cat.name]) budgetData[month][cat.name] = {}
+        if (!budgetData[month][cat.name]) {
+            budgetData[month][cat.name] = {}
+        }
         html += `<div class="budget-category-header">
             <span class="budget-category-pill" style="background:${cat.color}22;color:${cat.color}">${cat.name}</span>
         </div>`
@@ -532,23 +535,33 @@ function renderCategoryBreakdown(month, spending) {
         cat.items.forEach(item => {
             const expected = budgetData[month][cat.name][item] || 0
             const current = spending[item] || 0
-            const pct = expected !==0 ? Math.abs((current / expected) * 100).toFixed(2) + '%' : '0%'
-
-            const displayAmount = breakdownMode === 'expected' ? expected : current
-            const displayFormatted = displayAmount !== 0
-                ? (displayAmount > 0 ? '+$' : '-$') + Math.abs(displayAmount).toFixed(2)
-                : '$0'
-            html += `<div class="budget-row">
+            const pct = expected > 0 ? ((current / expected) * 100).toFixed(1) + '%' : '0%'
+            //EXPECTED MODE
+            if (breakdownMode === 'expected') {
+                html += `<div class="budget-row">
                 <span class="budget-row-name">${item}</span>
                 <div class="budget-input-wrapper">
                     <span class="budget-dollar">$</span>
                     <input type="number" class="budget-expected-input"
                         data-month="${month}" data-cat="${cat.name}" data-item="${item}"
-                        value="${expected > 0 ? expected : ''}" placeholder="$0">
+                        value="${expected > 0 ? expected : ''}" placeholder="0">
                 </div>
-                <span class="budget-row-current">${current !== 0 ? (current > 0 ? '+$' : '-$') + Math.abs(current).toFixed(2) : '$0'}</span>
+                <span class="budget-row-current">$${current.toFixed(2)}</span>
                 <span class="budget-row-pct">${pct}</span>
             </div>`
+            }
+            //CURRENT MODE
+            else {
+                html +=`<div class="budget-row">
+                    <span class="budget-row-name">
+                        ${item}
+                    </span>
+                    <span class="budget-row-current">
+                        $${current.toFixed(2)}
+                    </span>
+                </div>`
+            }    
+        
         })
     })
 
@@ -559,7 +572,7 @@ function renderCategoryBreakdown(month, spending) {
             const m = this.dataset.month
             const c = this.dataset.cat
             const i = this.dataset.item
-            if (!budgetData[m][c]) budgetData[m][c] = {}
+            if (!budgetData[m][c]) {budgetData[m][c] = {}}
             budgetData[m][c][i] = parseFloat(this.value) || 0
             saveBudget()
             renderBudget()
