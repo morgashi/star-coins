@@ -12,10 +12,25 @@
         <!-- LOGIN SCREEN -->
         <div id="loginScreen">
             <h1>Star Coins</h1>
-            <h2>Welcome Back!</h2>
+            
             <input id="username" placeholder="enter username">
             <input id="password" type="password" placeholder="enter password">
+            
             <button id="loginBtn">Login</button>
+
+            <p>Don't have an account?
+                <button id="showSignupBtn">Sign Up</button>
+            </p>
+        </div>
+        <div id="singupScreen" style="display:none;">
+            <h1>Create Account</h1>
+            <input id="signupUsername" placeholder="Username">
+            <input id="signupPassword" type="password" placeholder="Password">
+            <input id="signupPasswordConfirm" type="password" placeholder="Confirm Password">
+            <button id="signupBtn">Create Account</button>
+            <p>Already have an account?
+                <button id="backToLoginBtn">Log In</button>
+            </p>
         </div>
         <!-- HOMEPAGE -->
         <div id="dashboard" style="display:none;">
