@@ -190,9 +190,7 @@ function openModal() {
     document.getElementById('txAmount').value = ''
     document.getElementById('txDate').value = ''
     document.getElementById('txMerchant').value = ''
-    document.getElementById('txCategoryMain').value = ''
     document.getElementById('txCategory').value = ''
-    document.getElementById('txCategory').style.display = 'none'
     document.getElementById('txIconPreview').style.display = 'none'
     document.getElementById('txIconPreview').src = ''
     document.getElementById('txIconUpload').value = ''
@@ -226,6 +224,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     const icon = preview.style.display !== 'none' ? preview.src : ''
     const category = document.getElementById('txCategory').value.trim()
     const txId = editingId !== null ? editingId : Date.now()
+    const merchant = document.getElementById('txMerchant').value.trim()
 
     if (!desc) return alert('Please enter a description.')
     if (isNaN(amount)) return alert('Please enter a valid amount.')
@@ -236,11 +235,11 @@ document.getElementById('txSaveBtn').onclick = function() {
     
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
-        transactions[index] = { desc, amount, date, rawDate, category, id: editingId }
+        transactions[index] = { desc, amount, merchant, date, rawDate, category, id: editingId }
         if (icon) saveIcon(editingId, icon)
         editingId = null
     } else {
-        transactions.unshift({ desc, amount, date, rawDate, category, id: txId })
+        transactions.unshift({ desc, amount, merchant, date, rawDate, category, id: txId })
         if (icon) saveIcon(txId, icon)
     }
 
@@ -262,25 +261,7 @@ document.getElementById('txDeleteBtn').onclick = function() {
         editingId = null
 }
 
-const CATEGORY_ITEMS = {
-    'Housing + Utilities' : ['Rent + Fees', 'Utilities', 'Internet Bill', "Renter's Insurance"],
-    'Necessities' : ['Groceries', 'Personal Care', 'Healthcare', 'Gas'],
-    'Fun' : ['Dining Out', 'Entertainment', 'Shopping'],
-    'Savings' : ['Emergency Fund', 'Travel Fund', 'Investments']
-}
 
-document.getElementById('txCategoryMain').onchange = function() {
-    const subSelect = document.getElementById('txCategory')
-    const items = CATEGORY_ITEMS[this.value] || []
-    if (items.length === 0) {
-        subSelect.style.display = 'none'
-        subSelect.value = ''
-        return
-    }
-    subSelect.innerHTML = '<option value="">Select item...</option>' +
-        items.map(item => `<option value="${item}">${item}</option>`).join('')
-    subSelect.style.display = 'block'
-}
 // --- FILTERS ---
 document.getElementById('txSearch').oninput = renderTxFullList
 document.getElementById('txFilterFrom').onchange = renderTxFullList
@@ -423,25 +404,14 @@ function editTransaction(id) {
     const icon = getIcon(t.id)
     const preview = document.getElementById('txIconPreview')
     if (icon) {
-        preview.src = t.icon
+        preview.src = icon
         preview.style.display = 'block'
     } else {
         preview.style.display = 'none'
         preview.src = ''
     }
 
-    const t_category = t.category || ''
-    const mainCat = Object.keys(CATEGORY_ITEMS).find(k => CATEGORY_ITEMS[k].includes(t_category)) || ''
-    document.getElementById('txCategoryMain').value = mainCat
-    if (mainCat) {
-        const subSelect = document.getElementById('txCategory')
-        subSelect.innerHTML = '<option value="">Select item...</option>' +
-            CATEGORY_ITEMS[mainCat].map(item => `<option value="${item}">${item}</option>`).join('')
-        subSelect.style.display = 'block'
-        subSelect.value = t_category
-    } else {
-        document.getElementById('txCategory').style.display = 'none'
-    }
+
     document.getElementById('txModal').style.display = 'flex'
     document.getElementById('txDeleteBtn').style.display = 'block'
 }
