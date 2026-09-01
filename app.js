@@ -16,7 +16,7 @@ let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
 function parseLocalDate(dateString) {
     if(!dateString) return null
-    const [year, month, day] = date.String.split('-').map(Number)
+    const [year, month, day] = dateString.split('-').map(Number)
     return new Date(year, month -1, day)
 }
 let editingId = null
