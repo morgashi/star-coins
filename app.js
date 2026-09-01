@@ -478,12 +478,16 @@ function getCurrentSpendingForMonth(monthStr) {
     transactions.forEach(t => {
         if (!t.rawDate) return
         const d = parseLocalDate(t.rawDate)
+        if (!d) return
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
         if (label !== monthStr) return
-        if (t.amount >=0) return
-        const item = t.category || 'Uncategorized'
-        spending[item] = (spending[item] || 0) + Math.abs(t.amount)
+        if (Number(t.amount) >= 0) return
+        const category = t.category
+        if (!category) return
+        const amount = Math.abs(Number(t.amount)) || 0
+        spending[category] = (spending[category] || 0) + amount
     })
+    console.log('ACTUAL SPENDING FOR', monthStr, spending)
     return spending
 }
 
@@ -665,7 +669,7 @@ function renderOverview(month, spending) {
                     background:${catColors[i]};
                 "></div>
                 
-                <span style-'color:#555;">
+                <span style='color:#555;">
                     ${label}
                 </span>
             </div>
@@ -711,7 +715,16 @@ function renderOverview(month, spending) {
     })
 
     // --- WEEKLY SPENDING ---
+    function getMonthDate(monthStr) {
+        const parts = monthStr.split('')
+        const year = Number(parts[1])
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        const monthIndex = monthNames.indexOf(parts[0])
+        if (monthIndex === -1 || !year) return null
+        return new Date(year, monthIndex, 1)
+    }
     const selectedDate = new Date(month)
+    if (!selectedDate) return
     const year = selectedDate.getFullYear()
     const monthIndex = selectedDate.getMonth()
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
@@ -748,6 +761,9 @@ function renderOverview(month, spending) {
     const monthToDate = weeklyTotals.reduce((a,b)=>a+b,0)
     const weeksWithSpending = weeks.filter(w => w.total > 0).length || 1
     const avgPerWeek = monthToDate / weeksWithSpending
+
+console.log('WEEKLY CANVAS:', document.getElementById('weeklySpending'))
+console.log('WEEKLY TOTALS', weeklyTotals)
 
     if (weeklySpendingChart) weeklySpendingChart.destroy()
     weeklySpendingChart = new Chart(document.getElementById('weeklySpending'), {
