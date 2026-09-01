@@ -14,6 +14,11 @@ const signupBtn = document.getElementById('signupBtn')
 
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+function parseLocalDate(dateString) {
+    if(!dateString) return null
+    const [year, month, day] = date.String.split('-').map(Number)
+    return new Date(year, month -1, day)
+}
 let editingId = null
 let viewMode = 'list'
 
@@ -231,7 +236,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     if (!rawDate) return alert('Please select a date.')
     if(!category) return alert('Please select a category.')
 
-    const date = new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const date = parseLocalDate(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
@@ -324,8 +329,8 @@ function renderTxFullList() {
 
     let filtered = transactions.filter(t => {
         if (search && !t.desc.toLowerCase().includes(search)) return false
-        if (from && new Date(t.rawDate) < new Date(from)) return false
-        if (to && new Date(t.rawDate) > new Date(to)) return false
+        if (from && parseLocalDate(t.rawDate) < new Date(from)) return false
+        if (to && parseLocalDate(t.rawDate) > new Date(to)) return false
         return true
     })
 
@@ -472,7 +477,7 @@ function getCurrentSpendingForMonth(monthStr) {
     const spending = {}
     transactions.forEach(t => {
         if (!t.rawDate) return
-        const d = new Date(t.rawDate)
+        const d = parseLocalDate(t.rawDate)
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
         if (label !== monthStr) return
         if (t.amount >=0) return
@@ -632,16 +637,44 @@ function renderOverview(month, spending) {
 
     // Legend
     document.getElementById('donutLegend').innerHTML = catLabels.map((label, i) => {
-        const expPct = expectedTotals.reduce((a,b)=>a+b,0) > 0
-            ? ((expectedTotals[i] / expectedTotals.reduce((a,b)=>a+b,0)) * 100).toFixed(1)
+        const expectedTotal = expectedTotals.reduce((a,b) => a+b, 0)
+        const acutalTotal = actualTotals.reduce((a, b) => a+b, 0)
+        const expectedPct = expectedTotal > 0
+            ? ((expectedTotals[i] / expectedTotal) * 100).toFixed(1)
             : '0.0'
-        return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-                <div style="width:10px;height:10px;border-radius:50%;background:${catColors[i]};"></div>
-                <span style="color:#555;">${label}</span>
+        const actualPct = acutalTotal > 0
+            ?((actualTotals[i] / acutalTotal) * 100).toFixed(1)
+            : '0.0'
+        return `
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:6px;
+                font-size:12px;
+            ">
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                ">
+                    <div style="
+                    width:10px;
+                    height:10px;
+                    border-radius:50%;
+                    background:${catColors[i]};
+                "></div>
+                
+                <span style-'color:#555;">
+                    ${label}
+                </span>
             </div>
-            <span style="color:#888;">${expPct}%</span>
-        </div>`
+            <div style="display:flex;gap:35px;color:#888;">
+                <span>${expectedPct}%</span>
+                <span>${actualPct}%</span>
+            </div>
+        </div>
+    `
     }).join('')
 
     // --- MONEY IN / OUT ---
@@ -702,7 +735,7 @@ function renderOverview(month, spending) {
     // Sum spending per week from transactions
     transactions.forEach(t => {
         if (!t.rawDate) return
-        const d = new Date(t.rawDate)
+        const d = parseLocalDate(t.rawDate)
         const tLabel = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
         if (tLabel !== month) return
         if (t.amount >= 0) return // skip income
@@ -924,7 +957,7 @@ function renderInsights() {
 
     const monthTx = transactions.filter(t => {
         if (!t.rawDate) return false
-        const d = new Date(t.rawDate)
+        const d = parseLocalDate(t.rawDate)
         const label = d.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})
         return label === month && t.amount < 0
     })
@@ -941,7 +974,7 @@ function renderInsights() {
     const prevMonth = getPrevMonth(month)
     const prevTx = transactions.filter (t => {
         if (!t.rawDate) return false
-        const d = new Date(t.rawDate)
+        const d = parseLocalDate(t.rawDate)
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
         return label === prevMonth && t.amount < 0
     })
