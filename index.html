@@ -1,1 +1,303 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Star Coins</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen">
+            <h1>Star Coins</h1>
+            
+            <input id="username" placeholder="enter username">
+            <input id="password" type="password" placeholder="enter password">
+            
+            <button id="loginBtn">Login</button>
+
+            <p>Don't have an account?
+                <button id="showSignupBtn">Sign Up</button>
+            </p>
+        </div>
+        <div id="signupScreen" style="display:none;">
+            <h1>Create Account</h1>
+            <input id="signupUsername" placeholder="Username">
+            <input id="signupPassword" type="password" placeholder="Password">
+            <input id="signupPasswordConfirm" type="password" placeholder="Confirm Password">
+            <button id="signupBtn">Create Account</button>
+            <p>Already have an account?
+                <button id="backToLoginBtn">Log In</button>
+            </p>
+        </div>
+        <!-- HOMEPAGE -->
+        <div id="dashboard" style="display:none;">
+            <!-- NAVIGATION -->
+            <nav id="navbar">
+                <span class="nav-brand">★ Star Coins</span>
+                <div class="nav-links">
+                    <span class="nav-link active" data-page="dashboardPage">Home</span>
+                    <span class="nav-link" data-page="transactionsPage">All Transactions</span>
+                    <span class="nav-link" data-page="budgetPage">Monthly Budget</span>
+                    <span class="nav-link" data-page="insightsPage">Spending Insights</span>
+                </div>
+                <div class="nav-right">
+                    <span id="welcomeMsg"></span>
+                    <button id="logoutBtn">Logout</button>
+                </div>
+            </nav>
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboardPage" class="page">
+                <div class="main-grid">
+                    <div class="panel" id="accountsPanel">
+                        <p class="panel-title">Net Worth</p>
+                        <div class="net-worth-card">
+                            <p class="nw-label">Net worth</p>
+                            <p class="nw-amount" id="netWorth">$0.00</p>
+                        </div>
+                        <div id="accountList"></div>
+                        <button id="connectBankBtn" style="background:#4caf87;color:#111;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:12px;">+ Connect Bank</button>
+                        <button id="addAccountBtn">+ Add account</button>
+                    </div>
+                    <div class="panel" id="txPanel">
+                        <p class="panel-title">Recent Transactions</p>
+                        <button id="addTxBtn">+ Add Transaction</button>
+                        <div id="txList"></div>
+                    </div>
+                </div>
+                <!-- ACCOUNT DETAIL MODAL -->
+                <div id="accountModal" style="display:none;">
+                    <div class="modal-overlay">
+                        <div class="modal-box">
+                            <input id="accountModalName" class="modal-title-input" placeholder="Account name" readonly>
+                            <div class="modal-field">
+                                <span class="modal-label">Current Balance</span>
+                                <span id="accountModalBalance" class="modal-value-input" style="text-align:right;"></span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Account Type</span>
+                                <span id="accountModalType" class="modal-value-input" style="text-align:right;"></span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Annual Interest Rate</span>
+                                <input id="accountModalInterest" type="number" class="modal-value-input" placeholder="e.g. 4.5">
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Icon</span>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <img id="accountIconPreview" style="width:32-x;height:32px;border-radius:6px;object-fit:cover;display:none;">
+                                    <label class="upload-label">
+                                        Choose image
+                                        <input id="accountIconUpload" type="file" accept="image/*" style="display: none;">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="modal-actions">
+                                <button id="accountDeleteBtn" class="modal-delete">Delete Account</button>
+                                <button id="accountModalCancelBtn" class="toggle-btn">Close</button>
+                                <button id="accountModalSaveBtn" class="modal-save">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- TRANSACTION PAGE -->
+            <div id="transactionsPage" class="page" style="display:none">
+                <div class="page-container">
+                    <div class="page-header">
+                        <h2 class="page-heading"> All Transactions</h2>
+                        <div class="new-btn">
+                            <button id="addTxBtn2" class="new-btn">New +</button>
+                            <button id="toggleViewBtn" class="new-btn" style="background:#333;color:#aaa;">Table view</button>
+                        </div>
+                    </div>
+                    <div class="tx-filters">
+                        <input id="txSearch" type="text" placeholder="Search by name..." class="search-input">
+                        <div style="display:flex;gap:8px;">
+                            <input id="txFilterFrom" type="date" class="filter-date">
+                            <input id="txFilterTo" type="date" class="filter-date">
+                        </div>
+                    </div>
+                    <div id="txFullList"></div>
+                </div>
+            </div>
+
+            <!-- ADD TRANSACTION MODAL-->
+                <div id="txModal" style="display:none;">
+                    <div class = "modal-overlay">
+                        <div class="modal-box">
+                            <input id="txDesc" class="modal-title-input" placeholder="Description (e.g Groceries)">
+                            <div class="modal-field">
+                                <span class="modal-label">Amount</span>
+                                <input id="txAmount" type="number" class="modal-value-input" placeholder="e.g -54.36">
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Merchant</span>
+                                <input id="txMerchant" class="modal-value-input" placeholder="Merchant (e.g Netflix)">
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Date</span>
+                                <input id="txDate" type="date" class="modal-value-input">
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Category</span>
+                                <div style="display: flex;flex-direction: column;align-items: flex-end;gap: 6px;">
+                                    <label>Category</label>
+                                    <select id="txCategory">
+                                        <option value="">Select category...</option>
+                                        <option value="Rent + Fees">Rent + Fees</option>
+                                        <option value="Utilities">Utilities</option>
+                                        <option value="Internet Bill">Internet Bill</option>
+                                        <option value="Renter's Insurance">Renter's Insurance</option>
+                                        <option value="Groceries">Groceries</option>
+                                        <option value="Personal Care">Personal Care</option>
+                                        <option value=""Healthcare>Healthcare</option>
+                                        <option value="Gas">Gas</option>
+                                        <option value="Dining Out">Dining Out</option>
+                                        <option value="Entertainment">Entertainment</option>
+                                        <option value="Shopping">Shopping</option>
+                                        <option value="Emergency Fund">Emergency Fund</option>
+                                        <option value="TravelFund">Travel Fund</option>
+                                        <option value="Investments">Investments</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-label">Icon</span>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <img id="txIconPreview" style="width:32px;height:32px;border-radius:6px;object-fit:cover;display:none;">
+                                    <label class="upload-label">
+                                        Choose image
+                                        <input id="txIconUpload" type="file" accept="image/*" style="display:none;">
+                                    </label>
+                                </div>
+                            </div>   
+                            
+                            <div class="modal-actions">
+                                <button id="txDeleteBtn" class="modal-delete" style="display:none;">Delete</button>
+                                <button id="txSaveBtn" class="modal-save">Save</button>
+                                <button id="txCancelBtn" class="modal-delete">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- BUDGET PAGE -->
+            <div id="budgetPage" class="page" style="display:none">
+                <div class="page-container" style="max-width: 1100px;">
+                    <div class="budget-month-bar">
+                        <select id="budgetMonthSelect" class="month-select"></select>
+                    </div>
+                    <div class="budget-grid">
+                        <!-- CATEGORY BREAKDOWN -->
+                        <div class="budget-panel">
+                            <div class="budget-panel-header">
+                                <span class="budget-panel-title">CATEGORY BREAKDOWN</span>
+                                <div class="toggle-group">
+                                    <button class="toggle-btn active" id="breakdownExpectedBtn">Expected</button>
+                                    <button class="toggle-btn" id="breakdownCurrentBtn">Current</button>
+                                </div>
+                            </div>
+                            <div id="categoryBreakdown"></div>
+                        </div>
+                        <!-- CHARTS OVERVIEW -->
+                        <div class="budget-panel">
+                            <div class="budget-panel-header">
+                                <span class="budget-panel-title">OVERVIEW</span>
+                            </div>
+                            <!-- INCOME INPUT -->
+                            <div class="budget-income-row" style="margin-bottom:16px;">
+                                <span style="font-size: 13px;color: #888;">Income</span>
+                                <input type="number" id="budgetIncomeInput" placeholder="$0"
+                                    style="background:transparent;border: none;border-bottom: 1px solid #ddd;color: #111;font-size: 13px;width: 100px;outline: none;text-align: right;">
+                            </div>
+                            <!-- DONUT CHARTS -->
+                            <div style="display: flex;justify-content: space-around;align-items: center;margin-bottom: 20px;">
+                                <div style="text-align: center;">
+                                    <p style="font-size: 11px;color: #888;margin-bottom: 8px;">EXPECTED</p>
+                                    <div style="position: relative;width: 130px;height: 130px;">
+                                        <canvas id="donutExpected"></canvas>
+                                    </div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <p style="font-size: 11px;color: #888;margin-bottom: 8px;">ACTUAL</p>
+                                    <div style="position: relative;width: 130px;height: 130px;">
+                                        <canvas id="donutActual"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DONUT LEGEND -->
+                            <div id="donutLegend" style="margin-bottom: 20px;"></div>
+                            <!-- MONEY IN / OUT -->
+                            <!-- MONEY IN / OUT -->
+                            <p style="font-size:11px;color:#888;letter-spacing:0.08em;margin-bottom:8px;">MONEY IN / MONEY OUT</p>
+                            <div style="display:flex;justify-content:space-around;margin-bottom:8px;">
+                                <div style="text-align:center;">
+                                    <p style="font-size:11px;color:#888;">EXPECTED</p>
+                                    <canvas id="moneyInOutExpected" width="120" height="160"></canvas>
+                                </div>
+                                <div style="text-align:center;">
+                                    <p style="font-size:11px;color:#888;">ACTUAL</p>
+                                    <canvas id="moneyInOutActual" width="120" height="160"></canvas>
+                                </div>
+                            </div>
+                            <!-- WEEKLY SPENDING -->
+                            <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;margin-top: 16px;">WEEKLY SPENDING</p>
+                            <canvas id="weeklySpending" height="120"></canvas>
+                            <div id="weeklySpendingStats" style="text-align: center;font-size: 12px;color: #888;margin-top: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            <!-- SPENDING INSIGHTS PAGE -->
+            <div id="insightsPage" class="page" style="display:none;">
+                <div class="page-container" style="max-width:900px;">
+                    <div class="budget-month-bar">
+                        <select id="insightsMonthSelect" class="month-select"></select>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+                        <!-- DONUT CHART -->
+                        <div class="budget-panel">
+                            <p class="budget-panel-title">SPENDING BY CATEGORY</p>
+                            <div style="display: flex;justify-content: center;margin-bottom: 16px;">
+                                <div style="position:relative;width: 200px;height: 200px;">
+                                    <canvas id="insightsDonut"></canvas>
+                                </div>
+                            </div>
+                            <div id="insightsDonutLegend"></div>
+                        </div>
+                        <!-- STATS -->
+                        <div style="display: flex;flex-direction: column;gap:16px">
+                            <div class="budget-panel">
+                                <p class="budget-panel-title">TOTAL SPENT</p>
+                                <p id="insightsTotalSpent" style="font-size: 28px;font-weight: bold;color: #111;">$0.00</p>
+                                <p id="insightsDailyAvg" style="font-size: 12px;color: #888;margin-top:4px;"></p>
+                            </div>
+                            <div class="budget-panel">
+                                <p class="budget-panel-title">VS LAST MONTH</p>
+                                <p id="insightsVsLastMonth" style="font-size: 22px;font-weight: bold;">-</p>
+                                <p id="insightsVsLastMonthLabel" style="font-size: 12px;color: #888;margin-top: 4px;"></p>
+                            </div>
+                            <div class="budget-panel">
+                                <p class="budget-panel-title">TRANSACTIONS</p>
+                                <p id="insightsTxCount" style="font-size: 28px;font-weight: bold;color: #111;">0</p>
+                                <p style="font-size: 12px;color: #888;margin-top: 4px;">this month</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- BIGGEST EXPENSES -->
+                    <div class="budget-panel">
+                        <p class="budget-panel-title">BIGGEST EXPENSES</p>
+                        <div id="insightsBiggest"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
