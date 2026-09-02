@@ -902,7 +902,7 @@ console.log('WEEKLY TOTALS', weeklyTotals)
 
 
 populateMonthSelect()
-populateTransactionCategories
+populateTransactionCategories()
 renderBudget()
 document.getElementById('budgetMonthSelect').onchange = function () {
     renderBudget()
