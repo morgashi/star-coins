@@ -534,13 +534,17 @@ function renderDashboardBudget() {
             actual += spending[item] || 0
         })
         if (expected === 0 && actual === 0) return
-        const percentage = expected > 0
+        const hasBudget = expected > 0
+        const percentage = hasBudget
             ? (actual / expected) * 100
             : 0
         const barWidth = Math.min(percentage, 100)
         const difference = expected - actual
         let status
-        if (difference >= 0) {
+        if (!hasBudget) {
+            status = 'No budget set'
+            
+        } else if (difference >= 0) {
             status = `$${difference.toFixed(2)} remaining`
         } else {
             status = `$${Math.abs(difference).toFixed(2)} over budget`
@@ -551,9 +555,10 @@ function renderDashboardBudget() {
                     <span>${cat.name}</span>
                     <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
                 </div>
-                <div style="width:100%;height:10px;background:#eeeeee;border-radius:10px;overflow:hidden;">
-                    <div style="width:${barWidth}%;height:100%;background:${cat.color};border-radius:10px;"></div>
-                </div>
+                ${hasBudget ? `
+                    <div stly="width:100%;height:10px;background:#eeeeee;border-radius:10px;overflow:hidden;">
+                        <div style="width: ${barWidth}%;height:100%;background:${cat.color};border-radius:10px;transition:width 0.3s ease"></div>`:`
+                        <div style="width:100%;height:10px;background:#f5f5f5;border-radius:10px;"></div>`}
                 
                 <div class="dashboard-budget-status">${status}</div>
             </div>`
