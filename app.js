@@ -14,6 +14,34 @@ const signupBtn = document.getElementById('signupBtn')
 
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+
+// --- BUDGET DATA ---
+const BUDGET_CATEGORIES = [
+    {
+        name: 'Housing + Utilities',
+        color:'#b8d4f0',
+        items: ['Rent + Fees', 'Utilities', 'Internet Bill', "Renter's Insurance"]
+    },
+    {
+        name: 'Necessities',
+        color: '#f0d4f0',
+        items: ['Groceries', 'Personal Care', 'Healthcare', 'Gas']
+    },
+    {
+        name: 'Fun',
+        color: '#d4f0e0',
+        items: ['Dining Out', 'Entertainment', 'Shopping']
+    },
+    {
+        name: 'Savings',
+        color: '#f0f0d4',
+        items: ['Emergency Fund', 'Travel Fund', 'Investments']
+    }
+]
+let budgetData = JSON.parse(localStorage.getItem('budgetData')) || {}
+let budgetIncome = JSON.parse(localStorage.getItem('budgetIncome')) || {}
+let breakdownMode = 'expected'
+let overviewMode = 'expected'
 function parseLocalDate(dateString) {
     if(!dateString) return null
     const [year, month, day] = dateString.split('-').map(Number)
@@ -433,17 +461,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
 window.editTransaction = editTransaction
 
 // --- BUDGET ---
-const BUDGET_CATEGORIES = [
-    { name: 'Housing + Utilities', color: '#b8d4f0', items: ['Rent + Fees', 'Utilities', 'Internet Bill', 'Renter\'s Insurance']},
-    { name: 'Necessities', color: '#f0d4f0', items: ['Groceries', 'Personal Care', 'Healthcare', 'Gas']},
-    { name: 'Fun', color: '#d4f0e0', items: ['Dining Out', 'Entertainment', 'Shopping']},
-    { name: 'Savings', color: '#f0f0d4', items: ['Emergency Fund', 'Travel Fund', 'Investments']}
-]
 
-let budgetData = JSON.parse(localStorage.getItem('budgetData')) || {}
-let budgetIncome = JSON.parse(localStorage.getItem('budgetIncome')) || {}
-let breakdownMode = 'expected'
-let overviewMode = 'expected'
 
 function saveBudget() {
     localStorage.setItem('budgetData', JSON.stringify(budgetData)) 
@@ -498,7 +516,18 @@ function renderDashboardBudget() {
     const monthLabel = document.getElementById('dashboardBudgetMonth')
 
     if (!container || !monthLabel) return
-    // Get the currently selected budget month
+    const now = new Date()
+    const month = now.toLocaleDateString('en-US', {
+        month: 'long',
+        year:'numeric' 
+    })
+    
+    monthLabel.textContent = month
+
+    if (!budgetData[month]) {
+        budgetData[month] = {}
+    }
+    const spending = getCurrentSpendingForMonth(month)
     const budgetMonthSelect = document.getElementById('budgetMonthSelect')
     let month
     if (budgetMonthSelect && budgetMonthSelect.value) {
@@ -529,21 +558,11 @@ function renderDashboardBudget() {
             ? (actual / expected) *100
             : 0
         const barWidth = Math.min(percentage, 100)
-        let statusText = ''
-        if (percentage >= 100) {
-            statusText = `
-                <span style="color:#d66;font-size:11px;">
-                    $${(actual - expected).toFixed(2)} over
-                </span>`
-        } else {
-            statusText = `
-                <span style="color:#888;font-size:11px;">
-                    $${(expected - actual).toFixed(2)} remaining
-                    </span`
-        }
+        const remaining = expected - actual
+        
         html += `
             <div style="margin-bottom:18px;">
-                <div style="display-flex;justify-content:stape-between;align-items:center;margin-bottom:6px;">
+                <div style="display-flex;justify-content:space-between;margin-bottom:6px;">
                 <span style="font-size:13px;font-weight:500;">
                     ${category.name}
                 </span>
@@ -552,15 +571,18 @@ function renderDashboardBudget() {
                 </span>
             </div>
             <div style="width:100%;height:8px;background#eee;border-radius:10px;overflow:hidden;">
-                <div style="width${barWidth}%;hieght:100%;background:${category.color};border-radius:10px;transition:width 0.3s ease;"></div>
+                <div style="width${barWidth}%;height:100%;background:${category.color};border-radius:10px;"></div>
             </div>
-            <div style="display:flex; justify-content:flex-end;margin-top:4px;">
-                ${statusText}
+            <div style="text-align:right;margin-top:4px;font-size:11px;color:#888;">
+                ${remaining >=0
+                    ? '$' + remaining.toFixed(2) + 'remaining'
+                    : '$' + Math.abs(remaining).toFixed(2) + 'over'
+                }
             </div>
         </div>`
     })
 
-    if (html === '') {
+    if (!html) {
         html = `<div style="text-align:center;padding:20px 0;color:#999;font-size:12px;">
             Add a budget to see your progress.
             </div>`
