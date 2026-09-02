@@ -77,6 +77,7 @@ function showDashboard(username) {
     loginScreen.style.display = 'none'
     dashboard.style.display = 'block'
     renderAll()
+    renderDashboardBudget()
 }
 
 loginBtn.onclick = async function() {
@@ -178,6 +179,7 @@ document.getElementById('addAccountBtn').onclick = function() {
     accounts.push({ name, amount })
     save()
     renderAll()
+    
 }
 
 document.getElementById('accountDeleteBtn').onclick = function() {
@@ -187,6 +189,7 @@ document.getElementById('accountDeleteBtn').onclick = function() {
     save()
     document.getElementById('accountModal').style.display = 'none'
     renderAll()
+    
 }
 // --- MODAL ---
 function openModal() {
@@ -490,7 +493,80 @@ function getCurrentSpendingForMonth(monthStr) {
     console.log('ACTUAL SPENDING FOR', monthStr, spending)
     return spending
 }
+function renderDashboardBudget() {
+    const container = document.getElementById('dashboardBudgetProgress')
+    const monthLabel = document.getElementById('dashboardBudgetMonth')
 
+    if (!container || !monthLabel) return
+    // Get the currently selected budget month
+    const budgetMonthSelect = document.getElementById('budgetMonthSelect')
+    let month
+    if (budgetMonthSelect && budgetMonthSelect.value) {
+        month = budgetMonthSelect.value
+    } else {
+        const now = new Date()
+        month = now.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        })
+    }
+    monthLabel.textContent = month
+    if (!budgetData[month]) {
+        budgetData[month] = {}
+    }
+    const spending = getCurrentSpendingForMonth(month)
+    let html = ''
+    BUDGET_CATEGORIES.forEach(category => {
+        let expected = 0
+        let actual = 0
+
+        category.items.forEach(item => {
+            expected += budgetData[month][category.name]?.[item] || 0
+            actual += spending[item] || 0
+        })
+        if (expected === 0 && actual === 0) return
+        const percentage = expected > 0
+            ? (actual / expected) *100
+            : 0
+        const barWidth = Math.min(percentage, 100)
+        let statusText = ''
+        if (percentage >= 100) {
+            statusText = `
+                <span style="color:#d66;font-size:11px;">
+                    $${(actual - expected).toFixed(2)} over
+                </span>`
+        } else {
+            statusText = `
+                <span style="color:#888;font-size:11px;">
+                    $${(expected - actual).toFixed(2)} remaining
+                    </span`
+        }
+        html += `
+            <div style="margin-bottom:18px;">
+                <div style="display-flex;justify-content:stape-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:13px;font-weight:500;">
+                    ${category.name}
+                </span>
+                <span style="font-size:12px;color:#555;">
+                    $${actual.toFixed(2)} / $${expected.toFixed(2)}
+                </span>
+            </div>
+            <div style="width:100%;height:8px;background#eee;border-radius:10px;overflow:hidden;">
+                <div style="width${barWidth}%;hieght:100%;background:${category.color};border-radius:10px;transition:width 0.3s ease;"></div>
+            </div>
+            <div style="display:flex; justify-content:flex-end;margin-top:4px;">
+                ${statusText}
+            </div>
+        </div>`
+    })
+
+    if (html === '') {
+        html = `<div style="text-align:center;padding:20px 0;color:#999;font-size:12px;">
+            Add a budget to see your progress.
+            </div>`
+    }
+    container.innerHTML = html
+}
 function renderBudget() {
     const month = getSelectedMonth()
     if (!month) return
@@ -556,6 +632,7 @@ function renderCategoryBreakdown(month, spending) {
             budgetData[m][c][i] = parseFloat(this.value) || 0
             saveBudget()
             renderBudget()
+            renderDashboardBudget()
         }
     })
 }
@@ -881,6 +958,7 @@ async function fetchBankAccounts(access_token) {
 
         save()
         renderAll()
+        renderDashboardBudget()
     } catch (err) {
         console.error('Error fetching accounts:', err)
         alert('Error fetching account data. Please try again.')
