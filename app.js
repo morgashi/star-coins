@@ -716,15 +716,19 @@ function renderOverview(month, spending) {
 
     // --- WEEKLY SPENDING ---
     function getMonthDate(monthStr) {
-        const parts = monthStr.split('')
+        const parts = monthStr.split(' ')
         const year = Number(parts[1])
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         const monthIndex = monthNames.indexOf(parts[0])
         if (monthIndex === -1 || !year) return null
         return new Date(year, monthIndex, 1)
     }
-    const selectedDate = new Date(month)
-    if (!selectedDate) return
+   
+    const selectedDate = getMonthDate(month)
+    if (!selectedDate) {
+        console.error('Could not parse budget month:', month)
+        return
+    }
     const year = selectedDate.getFullYear()
     const monthIndex = selectedDate.getMonth()
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
