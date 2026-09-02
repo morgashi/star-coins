@@ -38,6 +38,23 @@ const BUDGET_CATEGORIES = [
         items: ['Emergency Fund', 'Travel Fund', 'Investments']
     }
 ]
+function populateTransactionCategories() {
+    const select = document.getElementById('txCategory')
+    select.innerHTML = '<option value=">Select category...</option'
+    BUDGET_CATEGORIES.forEach(categoryGroup => {
+        const group = document.createElement('optgroup')
+        group.label = categoryGroup.name
+
+        categoryGroup.items.forEach(categoryName => {
+            const option = document.createElement('option')
+            option.value = categoryName
+            option.textContent = categoryName
+            group.appendChild(option)
+        })
+
+        select.appendChild(group)
+    })
+}
 let budgetData = JSON.parse(localStorage.getItem('budgetData')) || {}
 let budgetIncome = JSON.parse(localStorage.getItem('budgetIncome')) || {}
 let breakdownMode = 'expected'
@@ -105,7 +122,6 @@ function showDashboard(username) {
     loginScreen.style.display = 'none'
     dashboard.style.display = 'block'
     renderAll()
-    renderDashboardBudget()
 }
 
 loginBtn.onclick = async function() {
@@ -219,6 +235,7 @@ document.getElementById('accountDeleteBtn').onclick = function() {
     renderAll()
     
 }
+
 // --- MODAL ---
 function openModal() {
     editingId = null
@@ -308,6 +325,7 @@ function renderAll() {
     renderAccounts()
     renderTxList()
     renderTxFullList()
+    renderDashboardBudget()
 }
 
 function renderAccounts() {
@@ -437,6 +455,7 @@ function editTransaction(id) {
     document.getElementById('txAmount').value = t.amount
     document.getElementById('txDate').value = t.rawDate
     document.getElementById('txCategory').value = t.category || ''
+    document.getElementById('txMerchant').value = t.merchant || ''
     const icon = getIcon(t.id)
     const preview = document.getElementById('txIconPreview')
     if (icon) {
@@ -512,7 +531,6 @@ function getCurrentSpendingForMonth(monthStr) {
     return spending
 }
 function renderDashboardBudget() {
-    console.log('RENDER DASHBOARD BUDGET RUNNING')
     const container = document.getElementById('dashboardBudgetProgress')
     const monthLabel = document.getElementById('dashboardBudgetMonth')
 
@@ -520,73 +538,64 @@ function renderDashboardBudget() {
     const month = getSelectedMonth()
     if(!month) return
     monthLabel.textContent = month
-    if (!budgetData[month]) {
-        budgetData[month] = {}
+    if (!budgetData[month]) budgetData[month] ={}
+   BUDGET_CATEGORIES.forEach(category => {
+    if (!budgetData[month][category.name]) {
+        budgetData[month][category.name] = {}
     }
-    const spending = getCurrentSpendingForMonth(month)
-    let testExpected = 0
-let testActual = 0
+   })
+   const spending = getCurrentSpendingForMonth(month)
+   let html = ''
+   BUDGET_CATEGORIES.forEach(category => {
+    let expected = 0
+    let actual = 0
 
-testExpected += budgetData[month]['Fun']['Dining Out'] || 0
-testExpected += budgetData[month]['Fun']['Entertainment'] || 0
-testExpected += budgetData[month]['Fun']['Shopping'] || 0
-
-testActual += spending['Dining Out'] || 0
-testActual += spending['Entertainment'] || 0
-testActual += spending['Shopping'] || 0
-
-console.log('FUN TEST EXPECTED:', testExpected)
-console.log('FUN TEST ACTUAL:', testActual)
-console.log('FUN TEST PERCENT:', (testActual / testExpected) * 100)
-    console.log('DASHBOARD BUDGET DATA:', budgetData[month])
-    console.log('DASHBOARD SPENDING:', spending)
-    let html = ''
-
-    BUDGET_CATEGORIES.forEach(cat => {
-        let expected = 0
-        let actual = 0
-        cat.items.forEach(item => {
-            expected += budgetData[month][cat.name]?.[item] || 0
-            actual += spending[item] || 0
-        })
-        if (expected === 0 && actual === 0) return
-        const hasBudget = expected > 0
-        const percentage = hasBudget
-            ? (actual / expected) * 100
-            : 0
-        const barWidth = Math.min(percentage, 100)
-        const difference = expected - actual
-        let status
-        if (!hasBudget) {
-            status = 'No budget set'
-            
-        } else if (difference >= 0) {
-            status = `$${difference.toFixed(2)} remaining`
-        } else {
-            status = `$${Math.abs(difference).toFixed(2)} over budget`
-        }
-        html += `
-            <div class="dashboard-budget-item">
-                <div class="dashboard-budget-header">
-                    <span>${cat.name}</span>
-                    <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
-                </div>
-                ${hasBudget ? `
-                    <div style="width:100%;height:12px;background:#eeeeee;border-radius:20px;overflow:hidden;margin-top:6px">
-                        <div class="dashboard-budget-fill" style="width: ${barWidth}%;height:12px;background-color:${cat.color};border-radius:20px;display:block"></div>
-                        ` : `
-                        <div style="width:100%;height:12px;background:#f1f1f1;border-radius:20px;margin-top:6px"></div>`}
-                
-                <div class="dashboard-budget-status">${status}</div>
-            </div>`
+    category.items.forEach(item => {
+        expected += budgetData[month][category.name][item] || 0
+        actual += spending[item] || 0
     })
-    if (html === '') {
-        html = `
-            <div class="dashboard-budget-empty">
-                Add a budget to see your progress.
-            </div>`
+
+    if (expected === 0 && actual === 0) return
+    
+    const hasBudget = expected > 0
+    const percentage = hasBudget ? (actual/expected) * 100 : 0
+    const barWidth = Math.min(percentage, 100)
+    const difference = expected - actual
+
+    let status = 'No budget set'
+    if (hasBudget && difference >=0) {
+        status = `$${difference.toFixed(2)} remaining`
+    } else if (hasBudget) {
+        status = `$${Math.abs(difference).toFixed(2)} over budget`
     }
-    container.innerHTML = html
+
+    html += `
+        <div class="dashboard-budget-item">
+            <div class="dashboard-budget-header">
+                <span>${category.name}</span>
+                <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
+            </div>
+            
+            ${hasBudget
+                ?`<div class="dashboard-budget-bar">
+                    <div class="dashboard-budget-fill" style ="width:${barWidth}%; background-color:${category.color};"></div>
+                    </div>`
+                : `<div class="dashboard-budget-bar"></div>`
+            }
+            
+            <div class="dashboard-budget-status">${status}</div>
+        </div>
+    `
+   })
+
+   if(html === '') {
+    html = `
+        <div class="dashboard-budget-empty">
+            Add a budget to see your progress.
+        </div>
+    `
+   }
+   container.innerHTML = html
 }
 
 function renderBudget() {
@@ -893,8 +902,12 @@ console.log('WEEKLY TOTALS', weeklyTotals)
 
 
 populateMonthSelect()
+populateTransactionCategories
 renderBudget()
-document.getElementById('budgetMonthSelect').onchange = renderBudget
+document.getElementById('budgetMonthSelect').onchange = function () {
+    renderBudget()
+    renderDashboardBudget()
+}
 
 document.getElementById('breakdownExpectedBtn').onclick = function() {
     breakdownMode = 'expected'
@@ -980,7 +993,6 @@ async function fetchBankAccounts(access_token) {
 
         save()
         renderAll()
-        renderDashboardBudget()
     } catch (err) {
         console.error('Error fetching accounts:', err)
         alert('Error fetching account data. Please try again.')
