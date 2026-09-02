@@ -551,9 +551,10 @@ function renderDashboardBudget() {
                     <span>${cat.name}</span>
                     <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
                 </div>
-                <div class="dashboard-budget-bar>
-                    <div class="dashboard-budget-fill style="width:${barWidth}%;backgorund:${cat.color};"></div>
+                <div style="width:100%;height:10px;background:#eeeeee;border-radius:10px;overflow:hidden;">
+                    <div style="width:${barWidth}%;height:100%;background:${cat.color};border-radius:10px;"></div>
                 </div>
+                
                 <div class="dashboard-budget-status">${status}</div>
             </div>`
     })
