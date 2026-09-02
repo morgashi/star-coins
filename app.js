@@ -524,6 +524,20 @@ function renderDashboardBudget() {
         budgetData[month] = {}
     }
     const spending = getCurrentSpendingForMonth(month)
+    let testExpected = 0
+let testActual = 0
+
+testExpected += budgetData[month]['Fun']['Dining Out'] || 0
+testExpected += budgetData[month]['Fun']['Entertainment'] || 0
+testExpected += budgetData[month]['Fun']['Shopping'] || 0
+
+testActual += spending['Dining Out'] || 0
+testActual += spending['Entertainment'] || 0
+testActual += spending['Shopping'] || 0
+
+console.log('FUN TEST EXPECTED:', testExpected)
+console.log('FUN TEST ACTUAL:', testActual)
+console.log('FUN TEST PERCENT:', (testActual / testExpected) * 100)
     console.log('DASHBOARD BUDGET DATA:', budgetData[month])
     console.log('DASHBOARD SPENDING:', spending)
     let html = ''
