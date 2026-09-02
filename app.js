@@ -524,6 +524,8 @@ function renderDashboardBudget() {
         budgetData[month] = {}
     }
     const spending = getCurrentSpendingForMonth(month)
+    console.log('DASHBOARD BUDGET DATA:', budgetData[month])
+    console.log('DASHBOARD SPENDING:', spending)
     let html = ''
 
     BUDGET_CATEGORIES.forEach(cat => {
