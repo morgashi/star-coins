@@ -512,6 +512,7 @@ function getCurrentSpendingForMonth(monthStr) {
     return spending
 }
 function renderDashboardBudget() {
+    console.log('RENDER DASHBOARD BUDGET RUNNING')
     const container = document.getElementById('dashboardBudgetProgress')
     const monthLabel = document.getElementById('dashboardBudgetMonth')
 
