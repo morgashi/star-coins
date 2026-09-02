@@ -572,8 +572,9 @@ console.log('FUN TEST PERCENT:', (testActual / testExpected) * 100)
                     <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
                 </div>
                 ${hasBudget ? `
-                    <div stly="width:100%;height:12px;background:#eeeeee;border-radius:20px;overflow:hidden;margin-top:6px">
-                        <div style="width: ${barWidth}%;height:12px;background:${cat.color};border-radius:20px;display:block"></div>`:`
+                    <div style="width:100%;height:12px;background:#eeeeee;border-radius:20px;overflow:hidden;margin-top:6px">
+                        <div class="dashboard-budget-fill" style="width: ${barWidth}%;height:12px;background-color:${cat.color};border-radius:20px;display:block"></div>
+                        ` : `
                         <div style="width:100%;height:12px;background:#f1f1f1;border-radius:20px;margin-top:6px"></div>`}
                 
                 <div class="dashboard-budget-status">${status}</div>
