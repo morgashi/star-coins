@@ -40,7 +40,7 @@ const BUDGET_CATEGORIES = [
 ]
 function populateTransactionCategories() {
     const select = document.getElementById('txCategory')
-    select.innerHTML = '<option value=">Select category...</option'
+    select.innerHTML = '<option value="">Select category...</option'
     BUDGET_CATEGORIES.forEach(categoryGroup => {
         const group = document.createElement('optgroup')
         group.label = categoryGroup.name
@@ -564,9 +564,13 @@ function renderDashboardBudget() {
 
     let status = 'No budget set'
     if (hasBudget && difference >=0) {
+       if (percentage >= 0) {
+        status = `⚠️ $${difference.toFixed(2)} remaining`
+       } else {
         status = `$${difference.toFixed(2)} remaining`
+       }
     } else if (hasBudget) {
-        status = `$${Math.abs(difference).toFixed(2)} over budget`
+        status = `⚠️ $${Math.abs(difference).toFixed(2)} over budget`
     }
 
     html += `
