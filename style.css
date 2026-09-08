@@ -729,6 +729,14 @@ input[type=number] { -moz-appearance: textfield; }
     font-size: 11px;
     color: #888;
 }
+.dashboard-budget-status.warning {
+    color: #c99a6b;
+    font-weight: 500;
+}
+.dashboard-budget-status.over-budget {
+    color: #c77b8a;
+    font-weight: 600;
+}
 .dashboard-budget-empty {
     text-align: center;
     padding: 25px 10px;
