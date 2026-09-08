@@ -559,17 +559,12 @@ function renderDashboardBudget() {
     
     const hasBudget = expected > 0
     const percentage = hasBudget ? (actual/expected) * 100 : 0
-    console.log('BUDGET CHECK:', category.name, {
-    expected,
-    actual,
-    percentage
-})
     const barWidth = Math.min(percentage, 100)
     const difference = expected - actual
 
     let status = 'No budget set'
     if (hasBudget && difference >=0) {
-       if (percentage >= 0) {
+       if (percentage >= 80) {
         status = `⚠️ $${difference.toFixed(2)} remaining`
        } else {
         status = `$${difference.toFixed(2)} remaining`
