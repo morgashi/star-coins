@@ -268,7 +268,10 @@ document.getElementById('txIconUpload').onchange = function() {
     }
     reader.readAsDataURL(file)
 }
-
+document.getElementById('txRecurring').addEventListener('change', function () {
+    const options = document.getElementById('recurringOptions')
+    options.style.display = this.checked ? 'block' : 'none'
+})
 document.getElementById('txSaveBtn').onclick = function() {
     const desc = document.getElementById('txDesc').value.trim()
     const amount = parseFloat(document.getElementById('txAmount').value)
@@ -309,9 +312,9 @@ document.getElementById('txDeleteBtn').onclick = function() {
     document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
-    document.getElementById('txCancelBtn').onclick = function() {
-        document.getElementById('txModal').style.display = 'none'
-        editingId = null
+document.getElementById('txCancelBtn').onclick = function() {
+    document.getElementById('txModal').style.display = 'none'
+    editingId = null
 }
 
 
