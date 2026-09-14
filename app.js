@@ -501,9 +501,12 @@ function renderAccounts() {
 
 function renderTxList() {
     const txList = document.getElementById('txList')
+    const sortedTransactions = [...transactions].sort((a,b) => {
+        return parseLocalDate(b.rawDate) - parseLocalDate(a.rawDate)
+    })
     txList.innerHTML = transactions.length === 0
         ? '<p style="color:#555;font-size:13px;">No transactions yet.</p>'
-        : transactions.slice(0, 5).map(t => txCardHTML(t)).join('')
+        : sortedTransactions.slice(0, 5).map(t => txCardHTML(t)).join('')
 }
 
 function renderTxFullList() {
@@ -511,11 +514,15 @@ function renderTxFullList() {
     const from = document.getElementById('txFilterFrom').value
     const to = document.getElementById('txFilterTo').value
 
-    let filtered = transactions.filter(t => {
+    let filtered = transactions
+        .filter(t => {
         if (search && !t.desc.toLowerCase().includes(search)) return false
         if (from && parseLocalDate(t.rawDate) < new Date(from)) return false
         if (to && parseLocalDate(t.rawDate) > new Date(to)) return false
         return true
+    })
+    filtered.sort((a,b) => {
+        return parseLocalDate(b.rawDate) - parseLocalDate(a.rawDate)
     })
 
     if (filtered.length === 0) {
