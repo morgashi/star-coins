@@ -376,7 +376,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
         if (index !== -1) {
-        transactions[index] = { desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, recurringId, id: editingId}
+        transactions[index] = { desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, recurringId: editingId, id: editingId}
         }
         if (icon) {saveIcon(editingId, icon)}
         
