@@ -296,7 +296,7 @@ function getNextRecurringDate(dateString, frequency) {
 function processRecurringTransactions() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-
+    let transactionsChanged = false
     recurringTransactions.forEach(recurring => {
         let nextDate = parseLocalDate(recurring.nextDate)
 
@@ -315,6 +315,7 @@ function processRecurringTransactions() {
                 t.recurringId === recurring.id && t.rawDate === rawDate
             )
             if (!alreadyExists) {
+                const newId = Date.now() + Math.random()
                 transactions.unshift({
                     desc: recurring.desc,
                     amount: recurring.amount,
@@ -325,11 +326,17 @@ function processRecurringTransactions() {
                     recurring: true,
                     recurringFrequency: recurring.frequency,
                     recurringId: recurring.id,
-                    id: Date.now() + Math.random()
+                    id: newId
                 })
+                if (recurring.icon) {
+                    saveIcon(newId, recurring.icon)
+                }
+                transactionsChanged = true
             }
 
             nextDate = getNextRecurringDate(rawDate, recurring.frequency)
+            if (!nextDate) return
+            nextDate.setHours(0, 0, 0, 0)
         }
         
         recurring.nextDate = [
@@ -339,6 +346,9 @@ function processRecurringTransactions() {
         ].join('-')
     })
     localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions))
+    if (transactionsChanged) {
+        save()
+    }
 }
 
 document.getElementById('txSaveBtn').onclick = function() {
@@ -360,18 +370,23 @@ document.getElementById('txSaveBtn').onclick = function() {
 
     const date = parseLocalDate(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     
+    const recurringId = recurring
+        ? (editingId !== null ? editingId : txId)
+        : null
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
-        transactions[index] = { desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: editingId }
-        if (icon) saveIcon(editingId, icon)
-        editingId = null
+        if (index !== -1) {
+        transactions[index] = { desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, recurringId, id: editingId}
+        }
+        if (icon) {saveIcon(editingId, icon)}
+        
     } else {
-        transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, recurringId: recurring ?txId :null, id: txId })
-        if (icon) saveIcon(txId, icon)
+        transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, recurringId, id: txId })
+        if (icon) {saveIcon(txId, icon)}
     }
 
     if (recurring) {
-        const existingRecurring = recurringTransactions.find(r => r.id === txId)
+        const existingRecurring = recurringTransactions.find(r => r.id === recurringId)
 
         if (existingRecurring) {
             existingRecurring.desc = desc
@@ -380,6 +395,7 @@ document.getElementById('txSaveBtn').onclick = function() {
             existingRecurring.category = category
             existingRecurring.frequency = recurringFrequency
             existingRecurring.nextDate = rawDate
+            existingRecurring.icon || getIcon(recurringId)
         } else {
             recurringTransactions.push({
                 id: txId,
@@ -388,23 +404,28 @@ document.getElementById('txSaveBtn').onclick = function() {
                 merchant,
                 category,
                 frequency: recurringFrequency,
-                nextDate: rawDate
+                nextDate: rawDate,
+                icon
             })
         }
     } else {
-        recurringTransactions = recurringTransactions.filter(r => r.id !== txId)
+        recurringTransactions = recurringTransactions.filter(r => r.id !== recurringId)
     }
 
     localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions))
-
+    editingId = null
     save()
     document.getElementById('txModal').style.display = 'none'
     renderAll()
 }
+
 document.getElementById('txDeleteBtn').onclick = function() {
+    if (editingId === null) return
     const t = transactions.find(t => t.id === editingId)
     if (t) deleteIcon(t.id)
     transactions = transactions.filter(t => t.id !== editingId)
+    recurringTransactions = recurringTransactions.filter(r => r.id !== editingId)
+    localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions))
     editingId = null
     save()
     document.getElementById('txModal').style.display = 'none'
