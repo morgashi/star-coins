@@ -14,6 +14,7 @@ const signupBtn = document.getElementById('signupBtn')
 
 let accounts = JSON.parse(localStorage.getItem('accounts')) || []
 let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+let recurringTransactions = JSON.parse(localStorage.getItem('recurringTransactions')) || []
 
 // --- BUDGET DATA ---
 const BUDGET_CATEGORIES = [
@@ -121,6 +122,7 @@ function showDashboard(username) {
     document.getElementById('welcomeMsg').textContent = 'Hi, ' + username
     loginScreen.style.display = 'none'
     dashboard.style.display = 'block'
+    processRecurringTransactions()
     renderAll()
 }
 
@@ -244,6 +246,9 @@ function openModal() {
     document.getElementById('txDate').value = ''
     document.getElementById('txMerchant').value = ''
     document.getElementById('txCategory').value = ''
+    document.getElementById('txRecurring').checked = false
+    document.getElementById('txRecurringFrequency').value = 'monthly'
+    document.getElementById('recurringOptions').style.display = 'none'
     document.getElementById('txIconPreview').style.display = 'none'
     document.getElementById('txIconPreview').src = ''
     document.getElementById('txIconUpload').value = ''
@@ -268,10 +273,74 @@ document.getElementById('txIconUpload').onchange = function() {
     }
     reader.readAsDataURL(file)
 }
+
 document.getElementById('txRecurring').addEventListener('change', function () {
     const options = document.getElementById('recurringOptions')
     options.style.display = this.checked ? 'block' : 'none'
 })
+
+function getNextRecurringDate(dateString, frequency) {
+    const date = parseLocalDate(dateString)
+
+    if (!date) return null
+    if (frequency === 'weekly') {
+        date.setDate(date.getDate() + 7)
+    } else if (frequency === 'monthly') {
+        date.setMonth(date.getMonth() +1)
+    } else if (frequency === 'yearly') {
+        date.setFullYear(date.getFullYear() +1)
+    }
+    return date
+}
+
+function processRecurringTransactions() {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    recurringTransactions.forEach(recurring => {
+        let nextDate = parseLocalDate(recurring.nextDate)
+
+        if (!nextDate) return
+        
+        nextDate.setHours(0, 0, 0, 0)
+
+        while (nextDate <= today) {
+            const rawDate = [
+                nextDate.getFullYear(),
+                String(nextDate.getMonth() + 1).padStart(2, '0'),
+                String(nextDate.getDate()).padStart(2, '0')
+            ].join('-')
+
+            const alreadyExists = transactions.some(t =>
+                t.recurringId === recurring.id && t.rawDate === rawDate
+            )
+            if (!alreadyExists) {
+                transactions.unshift({
+                    desc: recurring.desc,
+                    amount: recurring.amount,
+                    merchant: recurring.merchant,
+                    date: nextDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'}),
+                    rawDate,
+                    category: recurring.category,
+                    recurring: true,
+                    recurringFrequency: recurring.frequency,
+                    recurringId: recurring.id,
+                    id: Date.now() + Math.random()
+                })
+            }
+
+            nextDate = getNextRecurringDate(rawDate, recurring.frequency)
+        }
+        
+        recurring.nextDate = [
+            nextDate.getFullYear(),
+            String(nextDate.getMonth() + 1).padStart(2, '0'),
+            String(nextDate.getDate()).padStart(2, '0')
+        ].join('-')
+    })
+    localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions))
+}
+
 document.getElementById('txSaveBtn').onclick = function() {
     const desc = document.getElementById('txDesc').value.trim()
     const amount = parseFloat(document.getElementById('txAmount').value)
@@ -300,6 +369,33 @@ document.getElementById('txSaveBtn').onclick = function() {
         transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: txId })
         if (icon) saveIcon(txId, icon)
     }
+
+    if (recurring) {
+        const existingRecurring = recurringTransactions.find(r => r.id === txId)
+
+        if (existingRecurring) {
+            existingRecurring.desc = desc
+            existingRecurring.amount = amount
+            existingRecurring.merchant = merchant
+            existingRecurring.category = category
+            existingRecurring.frequency = recurringFrequency
+            existingRecurring.nextDate = rawDate
+        } else {
+            recurringTransactions.push({
+                id: txId,
+                desc,
+                amount,
+                merchant,
+                category,
+                frequency: recurringFrequency,
+                nextDate: rawDate
+            })
+        }
+    } else {
+        recurringTransactions = recurringTransactions.filter(r => r.id !== txId)
+    }
+
+    localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions))
 
     save()
     document.getElementById('txModal').style.display = 'none'
@@ -461,6 +557,9 @@ function editTransaction(id) {
     document.getElementById('txDate').value = t.rawDate
     document.getElementById('txCategory').value = t.category || ''
     document.getElementById('txMerchant').value = t.merchant || ''
+    document.getElementById('txRecurring').checked = t.recurring || false
+    document.getElementById('txRecurringFrequency').value = t.recurringFrequency || 'monthly'
+    document.getElementById('recurringOptions').style.display = t.recurring ? 'block' : 'none'
     const icon = getIcon(t.id)
     const preview = document.getElementById('txIconPreview')
     if (icon) {
