@@ -366,7 +366,7 @@ document.getElementById('txSaveBtn').onclick = function() {
         if (icon) saveIcon(editingId, icon)
         editingId = null
     } else {
-        transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: txId })
+        transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, recurringId: recurring ?txId :null, id: txId })
         if (icon) saveIcon(txId, icon)
     }
 
