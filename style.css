@@ -251,6 +251,20 @@ body {
     margin-top: 2px;
 }
 .tx-card-amount {font-weight: 500;}
+.tc-recurring-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #f0e6f0;
+    color: #9a7f9a;
+    font-size: 10px;
+    font-weight: 600;
+    vertical-align: middle;
+}
 
 /* TX DATE GROUPS */
 .tx-date-group { margin-bottom: 16px; }
