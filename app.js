@@ -281,6 +281,8 @@ document.getElementById('txSaveBtn').onclick = function() {
     const category = document.getElementById('txCategory').value.trim()
     const txId = editingId !== null ? editingId : Date.now()
     const merchant = document.getElementById('txMerchant').value.trim()
+    const recurring = document.getElementById('txRecurring').checked
+    const recurringFrequency = document.getElementById('txRecurringFrequency').value
 
     if (!desc) return alert('Please enter a description.')
     if (isNaN(amount)) return alert('Please enter a valid amount.')
@@ -291,11 +293,11 @@ document.getElementById('txSaveBtn').onclick = function() {
     
     if(editingId !== null) {
         const index = transactions.findIndex(t => t.id === editingId)
-        transactions[index] = { desc, amount, merchant, date, rawDate, category, id: editingId }
+        transactions[index] = { desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: editingId }
         if (icon) saveIcon(editingId, icon)
         editingId = null
     } else {
-        transactions.unshift({ desc, amount, merchant, date, rawDate, category, id: txId })
+        transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: txId })
         if (icon) saveIcon(txId, icon)
     }
 
@@ -441,7 +443,7 @@ function txCardHTML(t) {
             ${iconHTML}
             <div>
                 <div class="tx-card-name">${t.desc}</div>
-                <div class="tx-card-desc">${t.date}</div>
+                <div class="tx-card-desc">${t.date}${t.recurring ? '<span class="tx-recurring=pill">↻</span>' : ''}</div>
             </div>
         </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
