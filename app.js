@@ -383,7 +383,7 @@ document.getElementById('txSaveBtn').onclick = function() {
     }
 
     if (recurring) {
-        const existingRecurring = recurringTransactions.find(r => r.id === recurringId)
+        const existingRecurring = recurringTransactions.find(r => r.id === txId)
 
         if (existingRecurring) {
             existingRecurring.desc = desc
