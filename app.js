@@ -1,314 +1,1207 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Star Coins</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-</head>
+document.addEventListener('DOMContentLoaded', async function() {
 
-<body>
-    <div id="app">
-        <!-- LOGIN SCREEN -->
-        <div id="loginScreen">
-            <h1>Star Coins</h1>
+const loginBtn = document.getElementById('loginBtn')
+const logoutBtn = document.getElementById('logoutBtn')
+const loginScreen = document.getElementById('loginScreen')
+const dashboard = document.getElementById('dashboard')
+const signupScreen = document.getElementById('signupScreen')
+const showSignupBtn = document.getElementById('showSignupBtn')
+const backToLoginBtn = document.getElementById('backToLoginBtn')
+const signupUsername = document.getElementById('signupUsername')
+const signupPassword = document.getElementById('signupPassword')
+const signupPasswordConfirm = document.getElementById('signupPasswordConfirm')
+const signupBtn = document.getElementById('signupBtn')
+
+let accounts = JSON.parse(localStorage.getItem('accounts')) || []
+let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+
+// --- BUDGET DATA ---
+const BUDGET_CATEGORIES = [
+    {
+        name: 'Housing + Utilities',
+        color:'#b8d4f0',
+        items: ['Rent + Fees', 'Utilities', 'Internet Bill', "Renter's Insurance"]
+    },
+    {
+        name: 'Necessities',
+        color: '#f0d4f0',
+        items: ['Groceries', 'Personal Care', 'Healthcare', 'Gas']
+    },
+    {
+        name: 'Fun',
+        color: '#d4f0e0',
+        items: ['Dining Out', 'Entertainment', 'Shopping']
+    },
+    {
+        name: 'Savings',
+        color: '#f0f0d4',
+        items: ['Emergency Fund', 'Travel Fund', 'Investments']
+    }
+]
+function populateTransactionCategories() {
+    const select = document.getElementById('txCategory')
+    select.innerHTML = '<option value="">Select category...</option'
+    BUDGET_CATEGORIES.forEach(categoryGroup => {
+        const group = document.createElement('optgroup')
+        group.label = categoryGroup.name
+
+        categoryGroup.items.forEach(categoryName => {
+            const option = document.createElement('option')
+            option.value = categoryName
+            option.textContent = categoryName
+            group.appendChild(option)
+        })
+
+        select.appendChild(group)
+    })
+}
+let budgetData = JSON.parse(localStorage.getItem('budgetData')) || {}
+let budgetIncome = JSON.parse(localStorage.getItem('budgetIncome')) || {}
+let breakdownMode = 'expected'
+let overviewMode = 'expected'
+function parseLocalDate(dateString) {
+    if(!dateString) return null
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month -1, day)
+}
+let editingId = null
+let viewMode = 'list'
+
+// --- PLAID / SERVER ---
+const SERVER_URL = 'https://star-coins-server.onrender.com'
+
+// --- AUTH ---
+const token = localStorage.getItem('authToken')
+const username = localStorage.getItem('user')
+    if (token && username) {
+    try {
+        const res = await fetch(`${SERVER_URL}/verify-token`, {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/json'},
+            body: JSON.stringify({token})
+        })
+        const data = await res.json()
+        if (data.valid) {
+            showDashboard(username)
+        } else {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
+        }
+    } catch (err) {
+        console.error('Token verification failed:', err)
+    }
+}
+
+
+
+function save() {
+
+    const txToSave = transactions.map(t => {
+        const {icon, ...rest } = t
+        return rest
+    })
+    localStorage.setItem('accounts', JSON.stringify(accounts))
+    localStorage.setItem('transactions', JSON.stringify(txToSave))
+}
+
+function saveIcon(id, iconData) {
+    if (!iconData) return
+    localStorage.setItem(`icon_${id}`, iconData)
+}
+function getIcon(id) {
+    return localStorage.getItem(`icon_${id}`) || ''
+}
+function deleteIcon(id) {
+    localStorage.removeItem(`icon_${id}`)
+}
+
+
+
+function showDashboard(username) {
+    document.getElementById('welcomeMsg').textContent = 'Hi, ' + username
+    loginScreen.style.display = 'none'
+    dashboard.style.display = 'block'
+    renderAll()
+}
+
+loginBtn.onclick = async function() {
+    const username = document.getElementById('username').value.trim()
+    const password = document.getElementById('password').value.trim()
+    if (!username || !password) return alert('Please fill in both fields.')
+    
+    try {
+        const res = await fetch(`${SERVER_URL}/login`, {
+            method: 'POST',
+            headers:{ 'Content-Type' : 'application/json'},
+            body: JSON.stringify({username, password})
+        })
+        const data = await res.json()
+        if (!res.ok) return alert(data.error || 'Login failed.')
+        localStorage.setItem('authToken', data.token)
+        localStorage.setItem('user', username)
+        showDashboard(username)
+    } catch (err) {
+        alert('Error connecting to server. Please try again.')
+    }
+}
+
+logoutBtn.onclick = function() {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('user')
+    dashboard.style.display = 'none'
+    loginScreen.style.display = 'flex'
+}
+
+showSignupBtn.onclick = function() {
+    loginScreen.style.display = 'none'
+    signupScreen.style.display = 'block'
+}
+
+backToLoginBtn.onclick = function() {
+    signupScreen.style.display = 'none'
+    loginScreen.style.display = 'block'
+}
+
+signupBtn.onclick = async function() {
+    const username = signupUsername.value.trim()
+    const password = signupPassword.value
+    const confirmPassword = signupPasswordConfirm.value
+
+    if (username === '' || password === ''){
+        alert('Please entere a username and password')
+        return
+    }
+    if (password !== confirmPassword) {
+        alert('Passwords do not match')
+        return
+    }
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters')
+        return
+    }
+    try{
+        const response = await fetch(`${SERVER_URL}/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password
+            })
+        })
+        const data = await response.json()
+        if(!response.ok) {
+            alert(data.error || 'Could not create account')
+            return
+        }
+        console.log('Password hash:', data.passwordHash)
+        alert('Account created! Check the console for your password hash.')
+    } catch (error) {
+        console.error(error)
+        alert('Could not connect to the server')
+    }
+}
+// --- NAV ---
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.onclick = function() {
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'))
+        link.classList.add('active')
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none')
+        document.getElementById(link.dataset.page).style.display = 'block'
+        if (link.dataset.page === 'budgetPage') renderBudget()
+        if (link.dataset.page === 'insightsPage') renderInsights()
+    }
+})
+
+// --- ACCOUNTS ---
+document.getElementById('addAccountBtn').onclick = function() {
+    const name = prompt('Account name (e.g. Checking):')
+    if (!name) return
+    const amount = parseFloat(prompt('Current balance:'))
+    if (isNaN(amount)) return
+    accounts.push({ name, amount })
+    save()
+    renderAll()
+    
+}
+
+document.getElementById('accountDeleteBtn').onclick = function() {
+    if (viewingAccountId === null) return
+    accounts = accounts.filter(a => a.id !== viewingAccountId)
+    viewingAccountId = null
+    save()
+    document.getElementById('accountModal').style.display = 'none'
+    renderAll()
+    
+}
+
+// --- MODAL ---
+function openModal() {
+    editingId = null
+    document.getElementById('txDesc').value = ''
+    document.getElementById('txAmount').value = ''
+    document.getElementById('txDate').value = ''
+    document.getElementById('txMerchant').value = ''
+    document.getElementById('txCategory').value = ''
+    document.getElementById('txIconPreview').style.display = 'none'
+    document.getElementById('txIconPreview').src = ''
+    document.getElementById('txIconUpload').value = ''
+    document.getElementById('txModal').style.display = 'flex'
+    document.getElementById('txDeleteBtn').style.display = 'none'
+}
+
+document.getElementById('addTxBtn').onclick = openModal
+document.getElementById('addTxBtn2').onclick = openModal
+
+
+
+
+document.getElementById('txIconUpload').onchange = function() {
+    const file = this.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = function(e) {
+        const preview = document.getElementById('txIconPreview')
+        preview.src = e.target.result
+        preview.style.display = 'block'
+    }
+    reader.readAsDataURL(file)
+}
+document.getElementById('txRecurring').addEventListener('change', function () {
+    const options = document.getElementById('recurringOptions')
+    options.style.display = this.checked ? 'block' : 'none'
+})
+document.getElementById('txSaveBtn').onclick = function() {
+    const desc = document.getElementById('txDesc').value.trim()
+    const amount = parseFloat(document.getElementById('txAmount').value)
+    const rawDate = document.getElementById('txDate').value
+    const preview = document.getElementById('txIconPreview')
+    const icon = preview.style.display !== 'none' ? preview.src : ''
+    const category = document.getElementById('txCategory').value.trim()
+    const txId = editingId !== null ? editingId : Date.now()
+    const merchant = document.getElementById('txMerchant').value.trim()
+    const recurring = document.getElementById('txRecurring').checked
+    const recurringFrequency = document.getElementById('txRecurringFrequency').value
+
+    if (!desc) return alert('Please enter a description.')
+    if (isNaN(amount)) return alert('Please enter a valid amount.')
+    if (!rawDate) return alert('Please select a date.')
+    if(!category) return alert('Please select a category.')
+
+    const date = parseLocalDate(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    
+    if(editingId !== null) {
+        const index = transactions.findIndex(t => t.id === editingId)
+        transactions[index] = { desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: editingId }
+        if (icon) saveIcon(editingId, icon)
+        editingId = null
+    } else {
+        transactions.unshift({ desc, amount, merchant, date, rawDate, category, recurring, recurringFrequency, id: txId })
+        if (icon) saveIcon(txId, icon)
+    }
+
+    save()
+    document.getElementById('txModal').style.display = 'none'
+    renderAll()
+}
+document.getElementById('txDeleteBtn').onclick = function() {
+    const t = transactions.find(t => t.id === editingId)
+    if (t) deleteIcon(t.id)
+    transactions = transactions.filter(t => t.id !== editingId)
+    editingId = null
+    save()
+    document.getElementById('txModal').style.display = 'none'
+    renderAll()
+}
+document.getElementById('txCancelBtn').onclick = function() {
+    document.getElementById('txModal').style.display = 'none'
+    editingId = null
+}
+
+
+// --- FILTERS ---
+document.getElementById('txSearch').oninput = renderTxFullList
+document.getElementById('txFilterFrom').onchange = renderTxFullList
+document.getElementById('txFilterTo').onchange = renderTxFullList
+
+// --- RENDER ---
+function renderAll() {
+    renderAccounts()
+    renderTxList()
+    renderTxFullList()
+    renderDashboardBudget()
+}
+
+function renderAccounts() {
+    const total = accounts.reduce((sum, a) => sum + a.amount, 0)
+    document.getElementById('netWorth').textContent = '$' + total.toFixed(2)
+
+    const regularAccounts = accounts.filter(a => a.subtype !== 'credit card' && a.type !== 'credit')
+    const creditAccounts = accounts.filter(a => a.subtype === 'credit card' || a.type === 'credit')
+
+    function accountRowHTML(a) {
+        const iconHTML = a.icon
+            ? `<img src = "${a.icon}" style="width:36px;height:36px;border-radius:10px;object-fit:cover;">`
+            : `<div style = "width:36px;height:36px;border-radius:10px;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;color:#888;">?</div>`
+        return `<div class="account-row" onclick="openAccountModal(${a.id})" style="cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                ${iconHTML}
+                <span>${a.name}</span>
+            </div>
+            <span class="${a.amount >= 0 ? 'pos' : 'neg'}">
+                ${a.amount >= 0 ? '+$' : '-$'}${Math.abs(a.amount).toFixed(2)}
+            </span>
+        </div>`
+    }
+
+    let html = ''
+    if(regularAccounts.length > 0) {
+        html += `<div class="account-group-label">Accounts</div>`
+        html += regularAccounts.map(accountRowHTML).join('')
+    }
+    if (creditAccounts.length > 0) {
+        html += `<div class="account-group-label">Credit Cards</div>`
+        html += creditAccounts.map(accountRowHTML).join('')
+    }
+
+    document.getElementById('accountList').innerHTML = html
+        
+}
+
+function renderTxList() {
+    const txList = document.getElementById('txList')
+    txList.innerHTML = transactions.length === 0
+        ? '<p style="color:#555;font-size:13px;">No transactions yet.</p>'
+        : transactions.slice(0, 5).map(t => txCardHTML(t)).join('')
+}
+
+function renderTxFullList() {
+    const search = document.getElementById('txSearch').value.toLowerCase()
+    const from = document.getElementById('txFilterFrom').value
+    const to = document.getElementById('txFilterTo').value
+
+    let filtered = transactions.filter(t => {
+        if (search && !t.desc.toLowerCase().includes(search)) return false
+        if (from && parseLocalDate(t.rawDate) < new Date(from)) return false
+        if (to && parseLocalDate(t.rawDate) > new Date(to)) return false
+        return true
+    })
+
+    if (filtered.length === 0) {
+        document.getElementById('txFullList').innerHTML =
+            '<p style="color:#555;font-size:13px;">No transactions found.</p>'
+        return
+    }
+
+    const groups = {}
+    filtered.forEach(t => {
+        if (!groups[t.date]) groups[t.date] = []
+        groups[t.date].push(t)
+    })
+    if (viewMode === 'table') {
+        document.getElementById('txFullList').innerHTML =
+            `<table class="tx-table">
+                <thead>
+                    <tr>
+                        <th>Icon</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filtered.map(t => `
+                    <tr>
+                        <td>${t.icon ? `<img class="tx-card-icon" src="${t.icon}">` : '💳'}</td>
+                        <td>${t.desc}</td>
+                        <td>${t.date}</td>
+                        <td class="${t.amount >= 0 ? 'pos' : 'neg'}">
+                            ${t.amount >= 0 ? '+$' : '-$'}${Math.abs(t.amount).toFixed(2)}
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`
+    } else {
+        document.getElementById('txFullList').innerHTML = Object.entries(groups).map(([date, txs]) =>
+            `<div class="tx-date-group">
+                <p class="tx-date-label">${date}</p>
+                ${txs.map(t => txCardHTML(t)).join('')}
+            </div>`
+        ).join('')
+}
+    
+}
+
+function txCardHTML(t) {
+    const icon = getIcon(t.id)
+    const iconHTML = icon
+        ? `<img class="tx-card-icon" src="${icon}">`
+        : `<div class="tx-card-icon-placeholder">💳</div>`
+    return `<div class="tx-card" onclick="editTransaction(${t.id})" style="cursor:pointer;">
+        <div class="tx-card-left">
+            ${iconHTML}
+            <div>
+                <div class="tx-card-name">${t.desc}</div>
+                <div class="tx-card-desc">${t.date}${t.recurring ? '<span class="tx-recurring=pill">↻</span>' : ''}</div>
+            </div>
+        </div>
+        <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
+            ${t.amount >= 0 ? '+$' : '-$'}${Math.abs(t.amount).toFixed(2)}
+        </span>
+    </div>`
+}
+
+function editTransaction(id) {
+    const t = transactions.find(t => t.id === id)
+    if (!t) return
+    editingId = id
+    document.getElementById('txDesc').value = t.desc
+    document.getElementById('txAmount').value = t.amount
+    document.getElementById('txDate').value = t.rawDate
+    document.getElementById('txCategory').value = t.category || ''
+    document.getElementById('txMerchant').value = t.merchant || ''
+    const icon = getIcon(t.id)
+    const preview = document.getElementById('txIconPreview')
+    if (icon) {
+        preview.src = icon
+        preview.style.display = 'block'
+    } else {
+        preview.style.display = 'none'
+        preview.src = ''
+    }
+
+
+    document.getElementById('txModal').style.display = 'flex'
+    document.getElementById('txDeleteBtn').style.display = 'block'
+}
+
+// --- TOGGLE VIEW (table vs list) ---
+document.getElementById('toggleViewBtn').onclick = function() {
+    viewMode = viewMode === 'list' ? 'table' : 'list'
+    this.textContent = viewMode === 'list' ? 'Table view' : 'List view'
+    renderTxFullList()
+}
+window.editTransaction = editTransaction
+
+// --- BUDGET ---
+
+
+function saveBudget() {
+    localStorage.setItem('budgetData', JSON.stringify(budgetData)) 
+    localStorage.setItem('budgetIncome', JSON.stringify(budgetIncome))
+}
+
+function getMonthKey(monthStr) {
+    return monthStr
+}
+
+function populateMonthSelect() {
+    const select = document.getElementById('budgetMonthSelect')
+    select.innerHTML = ''
+    const now = new Date()
+    
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        
+        const opt = document.createElement('option')
+            opt.value = label
+            opt.textContent = label
+
+            if (i === 0) opt.selected = true
+            select.appendChild(opt)      
+    }
+}
+
+function getSelectedMonth() {
+    return document.getElementById('budgetMonthSelect').value
+}
+
+function getCurrentSpendingForMonth(monthStr) {
+    const spending = {}
+    transactions.forEach(t => {
+        if (!t.rawDate) return
+        const d = parseLocalDate(t.rawDate)
+        if (!d) return
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
+        if (label !== monthStr) return
+        if (Number(t.amount) >= 0) return
+        const category = t.category
+        if (!category) return
+        const amount = Math.abs(Number(t.amount)) || 0
+        spending[category] = (spending[category] || 0) + amount
+    })
+    console.log('ACTUAL SPENDING FOR', monthStr, spending)
+    return spending
+}
+function renderDashboardBudget() {
+    const container = document.getElementById('dashboardBudgetProgress')
+    const monthLabel = document.getElementById('dashboardBudgetMonth')
+
+    if(!container || !monthLabel) return
+    const month = getSelectedMonth()
+    if(!month) return
+    monthLabel.textContent = month
+    if (!budgetData[month]) budgetData[month] ={}
+   BUDGET_CATEGORIES.forEach(category => {
+    if (!budgetData[month][category.name]) {
+        budgetData[month][category.name] = {}
+    }
+   })
+   const spending = getCurrentSpendingForMonth(month)
+   let html = ''
+   BUDGET_CATEGORIES.forEach(category => {
+    let expected = 0
+    let actual = 0
+
+    category.items.forEach(item => {
+        expected += budgetData[month][category.name][item] || 0
+        actual += spending[item] || 0
+    })
+
+    if (expected === 0 && actual === 0) return
+    
+    const hasBudget = expected > 0
+    const percentage = hasBudget ? (actual/expected) * 100 : 0
+    
+    const barWidth = Math.min(percentage, 100)
+    const difference = expected - actual
+
+    let status = 'No budget set'
+    let statusClass = ''
+    if (hasBudget && percentage >= 100) {
+        status = `⚠️ $${Math.abs(difference).toFixed(2)} over budget`
+        statusClass = 'over-budget'
+    } else if (hasBudget && percentage >= 80) {
+        status = `⚠️ $${difference.toFixed(2)} remaining`
+        statusClass = 'warning'
+    } else if (hasBudget) {
+        status = `$${difference.toFixed(2)} remaining`
+    }
+
+    html += `
+        <div class="dashboard-budget-item">
+            <div class="dashboard-budget-header">
+                <span>${category.name}</span>
+                <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
+            </div>
             
-            <input id="username" placeholder="enter username">
-            <input id="password" type="password" placeholder="enter password">
+            ${hasBudget
+                ?`<div class="dashboard-budget-bar">
+                    <div class="dashboard-budget-fill" style ="width:${barWidth}%; background-color:${category.color};"></div>
+                    </div>`
+                : `<div class="dashboard-budget-bar"></div>`
+            }
             
-            <button id="loginBtn">Login</button>
-
-            <p>Don't have an account?
-                <button id="showSignupBtn">Sign Up</button>
-            </p>
+            <div class="dashboard-budget-status ${statusClass}">${status}</div>
         </div>
-        <div id="signupScreen" style="display:none;">
-            <h1>Create Account</h1>
-            <input id="signupUsername" placeholder="Username">
-            <input id="signupPassword" type="password" placeholder="Password">
-            <input id="signupPasswordConfirm" type="password" placeholder="Confirm Password">
-            <button id="signupBtn">Create Account</button>
-            <p>Already have an account?
-                <button id="backToLoginBtn">Log In</button>
-            </p>
+    `
+   })
+
+   if(html === '') {
+    html = `
+        <div class="dashboard-budget-empty">
+            Add a budget to see your progress.
         </div>
-        <!-- HOMEPAGE -->
-        <div id="dashboard" style="display:none;">
-            <!-- NAVIGATION -->
-            <nav id="navbar">
-                <span class="nav-brand">★ Star Coins</span>
-                <div class="nav-links">
-                    <span class="nav-link active" data-page="dashboardPage">Home</span>
-                    <span class="nav-link" data-page="transactionsPage">All Transactions</span>
-                    <span class="nav-link" data-page="budgetPage">Monthly Budget</span>
-                    <span class="nav-link" data-page="insightsPage">Spending Insights</span>
-                </div>
-                <div class="nav-right">
-                    <span id="welcomeMsg"></span>
-                    <button id="logoutBtn">Logout</button>
-                </div>
-            </nav>
-            <!-- DASHBOARD PAGE -->
-            <div id="dashboardPage" class="page">
-                <div class="main-grid">
-                    <div class="panel" id="accountsPanel">
-                        <p class="panel-title">Net Worth</p>
-                        <div class="net-worth-card">
-                            <p class="nw-label">Net worth</p>
-                            <p class="nw-amount" id="netWorth">$0.00</p>
-                        </div>
-                        <div id="accountList"></div>
-                        <button id="connectBankBtn" style="background:#4caf87;color:#111;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:12px;">+ Connect Bank</button>
-                        <button id="addAccountBtn">+ Add account</button>
-                    </div>
-                    <div class="panel" id="txPanel">
-                        <p class="panel-title">Recent Transactions</p>
-                        <button id="addTxBtn">+ Add Transaction</button>
-                        <div id="txList"></div>
-                    </div>
-                </div>
-                <!-- MONTHLY BUDGET PROGRESS -->
-                 <div class="panel" id="dashboardBudgetPanel">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                        <p class="panel-title" style="margin:0;">Monthly Budget</p>
-                        <span id="dashboardBudgetMonth" style="font-size:12px;color:#888;"></span>
-                    </div>
-                    <div id="dashboardBudgetProgress"></div>
-                 </div>
-                <!-- ACCOUNT DETAIL MODAL -->
-                <div id="accountModal" style="display:none;">
-                    <div class="modal-overlay">
-                        <div class="modal-box">
-                            <input id="accountModalName" class="modal-title-input" placeholder="Account name" readonly>
-                            <div class="modal-field">
-                                <span class="modal-label">Current Balance</span>
-                                <span id="accountModalBalance" class="modal-value-input" style="text-align:right;"></span>
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Account Type</span>
-                                <span id="accountModalType" class="modal-value-input" style="text-align:right;"></span>
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Annual Interest Rate</span>
-                                <input id="accountModalInterest" type="number" class="modal-value-input" placeholder="e.g. 4.5">
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Icon</span>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <img id="accountIconPreview" style="width:32-x;height:32px;border-radius:6px;object-fit:cover;display:none;">
-                                    <label class="upload-label">
-                                        Choose image
-                                        <input id="accountIconUpload" type="file" accept="image/*" style="display: none;">
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="modal-actions">
-                                <button id="accountDeleteBtn" class="modal-delete">Delete Account</button>
-                                <button id="accountModalCancelBtn" class="toggle-btn">Close</button>
-                                <button id="accountModalSaveBtn" class="modal-save">Save</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- TRANSACTION PAGE -->
-            <div id="transactionsPage" class="page" style="display:none">
-                <div class="page-container">
-                    <div class="page-header">
-                        <h2 class="page-heading"> All Transactions</h2>
-                        <div class="new-btn">
-                            <button id="addTxBtn2" class="new-btn">New +</button>
-                            <button id="toggleViewBtn" class="new-btn" style="background:#333;color:#aaa;">Table view</button>
-                        </div>
-                    </div>
-                    <div class="tx-filters">
-                        <input id="txSearch" type="text" placeholder="Search by name..." class="search-input">
-                        <div style="display:flex;gap:8px;">
-                            <input id="txFilterFrom" type="date" class="filter-date">
-                            <input id="txFilterTo" type="date" class="filter-date">
-                        </div>
-                    </div>
-                    <div id="txFullList"></div>
-                </div>
-            </div>
+    `
+   }
+   container.innerHTML = html
+}
 
-            <!-- ADD TRANSACTION MODAL-->
-                <div id="txModal" style="display:none;">
-                    <div class = "modal-overlay">
-                        <div class="modal-box">
-                            <input id="txDesc" class="modal-title-input" placeholder="Description (e.g Groceries)">
-                            <div class="modal-field">
-                                <span class="modal-label">Amount</span>
-                                <input id="txAmount" type="number" class="modal-value-input" placeholder="e.g -54.36">
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Merchant</span>
-                                <input id="txMerchant" class="modal-value-input" placeholder="Merchant (e.g Netflix)">
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Date</span>
-                                <input id="txDate" type="date" class="modal-value-input">
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Category</span>
-                                <div style="display: flex;flex-direction: column;align-items: flex-end;gap: 6px;">
-                                    <label>Category</label>
-                                    <select id="txCategory">
-                                        <option value="">Select category...</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="modal-field">
-                                <span class="modal-label">Icon</span>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <img id="txIconPreview" style="width:32px;height:32px;border-radius:6px;object-fit:cover;display:none;">
-                                    <label class="upload-label">
-                                        Choose image
-                                        <input id="txIconUpload" type="file" accept="image/*" style="display:none;">
-                                    </label>
-                                </div>
-                            </div>   
-                            <div class="modal-field">
-                                <span class="modal-label">Recurring</span>
-                                <div style="display: flex;align-items: center;gap: 8px;">
-                                    <label style="display: flex;align-items: center;gap: 6px;font-size: 12px;">
-                                        <input id="txRecurring" type="checkbox">
-                                        Repeat this transaction
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="recurringOptions" style="display: none;">
-                                <div class="modal-field">
-                                    <span class="modal-label">Frequency</span>
-                                    <select id="txRecurringFrequency">
-                                        <option value="weekly">Weekly</option>
-                                        <option value="monthly" selected>Monthly</option>
-                                        <option value="yearly">Yearly</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="modal-actions">
-                                <button id="txDeleteBtn" class="modal-delete" style="display:none;">Delete</button>
-                                <button id="txSaveBtn" class="modal-save">Save</button>
-                                <button id="txCancelBtn" class="modal-delete">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+function renderBudget() {
+    const month = getSelectedMonth()
+    if (!month) return
+    if (!budgetData[month]) budgetData[month] = {}
+    const spending = getCurrentSpendingForMonth(month)
+    renderCategoryBreakdown(month, spending)
+    renderOverview(month, spending)
+}
 
-            <!-- BUDGET PAGE -->
-            <div id="budgetPage" class="page" style="display:none">
-                <div class="page-container" style="max-width: 1100px;">
-                    <div class="budget-month-bar">
-                        <select id="budgetMonthSelect" class="month-select"></select>
-                    </div>
-                    <div class="budget-grid">
-                        <!-- CATEGORY BREAKDOWN -->
-                        <div class="budget-panel">
-                            <div class="budget-panel-header">
-                                <span class="budget-panel-title">CATEGORY BREAKDOWN</span>
-                                <div class="toggle-group">
-                                    <button class="toggle-btn active" id="breakdownExpectedBtn">Expected</button>
-                                    <button class="toggle-btn" id="breakdownCurrentBtn">Current</button>
-                                </div>
-                            </div>
-                            <div id="categoryBreakdown"></div>
-                        </div>
-                        <!-- CHARTS OVERVIEW -->
-                        <div class="budget-panel">
-                            <div class="budget-panel-header">
-                                <span class="budget-panel-title">OVERVIEW</span>
-                            </div>
-                            <!-- INCOME INPUT -->
-                            <div class="budget-income-row" style="margin-bottom:16px;">
-                                <span style="font-size: 13px;color: #888;">Income</span>
-                                <input type="number" id="budgetIncomeInput" placeholder="$0"
-                                    style="background:transparent;border: none;border-bottom: 1px solid #ddd;color: #111;font-size: 13px;width: 100px;outline: none;text-align: right;">
-                            </div>
-                            <!-- DONUT CHARTS -->
-                            <div style="display: flex;justify-content: space-around;align-items: center;margin-bottom: 20px;">
-                                <div style="text-align: center;">
-                                    <p style="font-size: 11px;color: #888;margin-bottom: 8px;">EXPECTED</p>
-                                    <div style="position: relative;width: 130px;height: 130px;">
-                                        <canvas id="donutExpected"></canvas>
-                                    </div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <p style="font-size: 11px;color: #888;margin-bottom: 8px;">ACTUAL</p>
-                                    <div style="position: relative;width: 130px;height: 130px;">
-                                        <canvas id="donutActual"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- DONUT LEGEND -->
-                            <div id="donutLegend" style="margin-bottom: 20px;"></div>
-                            <!-- MONEY IN / OUT -->
-                            <!-- MONEY IN / OUT -->
-                            <p style="font-size:11px;color:#888;letter-spacing:0.08em;margin-bottom:8px;">MONEY IN / MONEY OUT</p>
-                            <div style="display:flex;justify-content:space-around;margin-bottom:8px;">
-                                <div style="text-align:center;">
-                                    <p style="font-size:11px;color:#888;">EXPECTED</p>
-                                    <canvas id="moneyInOutExpected" width="120" height="160"></canvas>
-                                </div>
-                                <div style="text-align:center;">
-                                    <p style="font-size:11px;color:#888;">ACTUAL</p>
-                                    <canvas id="moneyInOutActual" width="120" height="160"></canvas>
-                                </div>
-                            </div>
-                            <!-- WEEKLY SPENDING -->
-                            <p style="font-size: 11px;color: #888;letter-spacing: 0.08em;margin-bottom: 8px;margin-top: 16px;">WEEKLY SPENDING</p>
-                            <canvas id="weeklySpending" height="120"></canvas>
-                            <div id="weeklySpendingStats" style="text-align: center;font-size: 12px;color: #888;margin-top: 8px;"></div>
-                        </div>
-                    </div>
+function renderCategoryBreakdown(month, spending) {
+    const container = document.getElementById('categoryBreakdown')
+    let html = ''
+
+    BUDGET_CATEGORIES.forEach(cat => {
+        if (!budgetData[month][cat.name]) {
+            budgetData[month][cat.name] = {}
+        }
+        html += `<div class="budget-category-header">
+            <span class="budget-category-pill" style="background:${cat.color}22;color:${cat.color}">${cat.name}</span>
+        </div>`
+
+        cat.items.forEach(item => {
+            const expected = budgetData[month][cat.name][item] || 0
+            const current = spending[item] || 0
+            const pct = expected > 0 ? ((current / expected) * 100).toFixed(1) + '%' : '0%'
+            //EXPECTED MODE
+            if (breakdownMode === 'expected') {
+                html += `<div class="budget-row">
+                <span class="budget-row-name">${item}</span>
+                <div class="budget-input-wrapper">
+                    <span class="budget-dollar">$</span>
+                    <input type="number" class="budget-expected-input"
+                        data-month="${month}" data-cat="${cat.name}" data-item="${item}"
+                        value="${expected > 0 ? expected : ''}" placeholder="0">
                 </div>
-            </div> 
-            <!-- SPENDING INSIGHTS PAGE -->
-            <div id="insightsPage" class="page" style="display:none;">
-                <div class="page-container" style="max-width:900px;">
-                    <div class="budget-month-bar">
-                        <select id="insightsMonthSelect" class="month-select"></select>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-                        <!-- DONUT CHART -->
-                        <div class="budget-panel">
-                            <p class="budget-panel-title">SPENDING BY CATEGORY</p>
-                            <div style="display: flex;justify-content: center;margin-bottom: 16px;">
-                                <div style="position:relative;width: 200px;height: 200px;">
-                                    <canvas id="insightsDonut"></canvas>
-                                </div>
-                            </div>
-                            <div id="insightsDonutLegend"></div>
-                        </div>
-                        <!-- STATS -->
-                        <div style="display: flex;flex-direction: column;gap:16px">
-                            <div class="budget-panel">
-                                <p class="budget-panel-title">TOTAL SPENT</p>
-                                <p id="insightsTotalSpent" style="font-size: 28px;font-weight: bold;color: #111;">$0.00</p>
-                                <p id="insightsDailyAvg" style="font-size: 12px;color: #888;margin-top:4px;"></p>
-                            </div>
-                            <div class="budget-panel">
-                                <p class="budget-panel-title">VS LAST MONTH</p>
-                                <p id="insightsVsLastMonth" style="font-size: 22px;font-weight: bold;">-</p>
-                                <p id="insightsVsLastMonthLabel" style="font-size: 12px;color: #888;margin-top: 4px;"></p>
-                            </div>
-                            <div class="budget-panel">
-                                <p class="budget-panel-title">TRANSACTIONS</p>
-                                <p id="insightsTxCount" style="font-size: 28px;font-weight: bold;color: #111;">0</p>
-                                <p style="font-size: 12px;color: #888;margin-top: 4px;">this month</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- BIGGEST EXPENSES -->
-                    <div class="budget-panel">
-                        <p class="budget-panel-title">BIGGEST EXPENSES</p>
-                        <div id="insightsBiggest"></div>
-                    </div>
-                </div>
+                <span class="budget-row-current">$${current.toFixed(2)}</span>
+                <span class="budget-row-pct">${pct}</span>
+            </div>`
+            }
+            //CURRENT MODE
+            else {
+                html +=`<div class="budget-row">
+                    <span class="budget-row-name">
+                        ${item}
+                    </span>
+                    <span class="budget-row-current">
+                        $${current.toFixed(2)}
+                    </span>
+                </div>`
+            }    
+        
+        })
+    })
+
+    container.innerHTML = html
+
+    container.querySelectorAll('.budget-expected-input').forEach(input => {
+        input.onchange = function() {
+            const m = this.dataset.month
+            const c = this.dataset.cat
+            const i = this.dataset.item
+            if (!budgetData[m][c]) {budgetData[m][c] = {}}
+            budgetData[m][c][i] = parseFloat(this.value) || 0
+            saveBudget()
+            renderBudget()
+            renderDashboardBudget()
+        }
+    })
+}
+
+
+let donutExpectedChart = null
+let donutActualChart = null
+let moneyInOutExpectedChart = null
+let moneyInOutActualChart = null
+let weeklySpendingChart = null
+
+function renderOverview(month, spending) {
+    const income = budgetIncome[month] || 0
+
+    document.getElementById('budgetIncomeInput').value = income !==0 ? income : ''
+
+    document.getElementById('budgetIncomeInput').onchange = function() {
+        budgetIncome[month] = parseFloat(this.value) || 0
+        saveBudget()
+        renderBudget()
+    }
+
+    const catColors = ['#b8b4f0', '#f0d48c', '#f0b4c8', '#f0c8a0']
+    const catLabels = BUDGET_CATEGORIES.map(c => c.name)
+
+    const expectedTotals = []
+    const actualTotals = []
+
+    BUDGET_CATEGORIES.forEach(cat => {
+        let exp = 0
+        let cur = 0
+
+        if(budgetData[month] && budgetData[month][cat.name]) {
+            Object.values(budgetData[month][cat.name]).forEach(v => exp += Math.abs(v))
+        }
+
+        cat.items.forEach(item => {
+            cur += spending[item] || 0
+        })
+        expectedTotals.push(exp)
+        actualTotals.push(cur)
+    })
+
+    if(donutExpectedChart) donutExpectedChart.destroy()
+    if(donutActualChart) donutActualChart.destroy()
+    
+    donutExpectedChart = new Chart(document.getElementById('donutExpected'), {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: expectedTotals,
+                backgroundColor: catColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '65%',
+            plugins: { legend: {display: false }},
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    })
+    //--- DONUT CHARTS ---
+    donutActualChart = new Chart(document.getElementById('donutActual'), {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: actualTotals,
+                backgroundColor: catColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '65%',
+            plugins: { legend: { display:false }},
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    })
+
+
+    // Legend
+    document.getElementById('donutLegend').innerHTML = catLabels.map((label, i) => {
+        const expectedTotal = expectedTotals.reduce((a,b) => a+b, 0)
+        const acutalTotal = actualTotals.reduce((a, b) => a+b, 0)
+        const expectedPct = expectedTotal > 0
+            ? ((expectedTotals[i] / expectedTotal) * 100).toFixed(1)
+            : '0.0'
+        const actualPct = acutalTotal > 0
+            ?((actualTotals[i] / acutalTotal) * 100).toFixed(1)
+            : '0.0'
+        return `
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:6px;
+                font-size:12px;
+            ">
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                ">
+                    <div style="
+                    width:10px;
+                    height:10px;
+                    border-radius:50%;
+                    background:${catColors[i]};
+                "></div>
+                
+                <span style='color:#555;">
+                    ${label}
+                </span>
+            </div>
+            <div style="display:flex;gap:35px;color:#888;">
+                <span>${expectedPct}%</span>
+                <span>${actualPct}%</span>
             </div>
         </div>
-    </div>
-    <script src="app.js"></script>
-</body>
+    `
+    }).join('')
 
-</html>
+    // --- MONEY IN / OUT ---
+    const totalExpectedSpend = expectedTotals.reduce((a,b)=>a+b,0)
+    const totalActualSpend = actualTotals.reduce((a,b)=>a+b,0)
+
+    if (moneyInOutExpectedChart) moneyInOutExpectedChart.destroy()
+    if (moneyInOutActualChart) moneyInOutActualChart.destroy()
+ 
+    moneyInOutExpectedChart = new Chart(document.getElementById('moneyInOutExpected'), {
+        type: 'bar',
+        data: {
+            labels: ['IN', 'OUT'],
+            datasets: [{data: [income, totalExpectedSpend], backgroundColor: ['#a8d8a8', '#f0b8a8'], borderRadius: 8, borderWidth: 0 }]
+        },
+        options: {
+            plugins: {legend: {display: false} },
+            scales: {x: { grid: {display: false}, ticks: { font: {size: 10}, color: '#888'}}, y: {display: false}},
+            responsive: false
+        }
+    })
+
+    moneyInOutActualChart = new Chart(document.getElementById('moneyInOutActual'), {
+        type: 'bar',
+        data: {
+            labels: ['IN', 'OUT'],
+            datasets: [{ data: [income, totalActualSpend], backgroundColor: ['#a8d8a8', '#f0b8a8'], borderRadius: 8, borderWidth: 0 }]
+        },
+        options: {
+            plugins: { legend: { display: false}},
+            scales: {x:{grid: {display:false}, ticks: {font:{size:10}, color:'#888'}}, y: {display: false}},
+            responsive: false
+        }
+    })
+
+    // --- WEEKLY SPENDING ---
+    function getMonthDate(monthStr) {
+        const parts = monthStr.split(' ')
+        const year = Number(parts[1])
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        const monthIndex = monthNames.indexOf(parts[0])
+        if (monthIndex === -1 || !year) return null
+        return new Date(year, monthIndex, 1)
+    }
+   
+    const selectedDate = getMonthDate(month)
+    if (!selectedDate) {
+        console.error('Could not parse budget month:', month)
+        return
+    }
+    const year = selectedDate.getFullYear()
+    const monthIndex = selectedDate.getMonth()
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+
+    // Build weeks
+    const weeks = []
+    let weekStart = 1
+    
+    while (weekStart <= daysInMonth) {
+        const weekEnd = Math.min(weekStart + 6, daysInMonth)
+        const monthName = selectedDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+        weeks.push({
+            label: `${monthName} ${weekStart}-${weekEnd}`,
+            start: weekStart,
+            end: weekEnd,
+            total: 0
+        })
+        weekStart += 7
+    }
+
+    // Sum spending per week from transactions
+    transactions.forEach(t => {
+        if (!t.rawDate) return
+        const d = parseLocalDate(t.rawDate)
+        const tLabel = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        if (tLabel !== month) return
+        if (t.amount >= 0) return // skip income
+        const day = d.getDate()
+        const week = weeks.find(w => day >= w.start && day <= w.end)
+        if (week) week.total += Math.abs(t.amount)
+    })
+
+    const weeklyTotals = weeks.map(w => w.total)
+    const monthToDate = weeklyTotals.reduce((a,b)=>a+b,0)
+    const weeksWithSpending = weeks.filter(w => w.total > 0).length || 1
+    const avgPerWeek = monthToDate / weeksWithSpending
+
+console.log('WEEKLY CANVAS:', document.getElementById('weeklySpending'))
+console.log('WEEKLY TOTALS', weeklyTotals)
+
+    if (weeklySpendingChart) weeklySpendingChart.destroy()
+    weeklySpendingChart = new Chart(document.getElementById('weeklySpending'), {
+        type: 'bar',
+        data: {
+            labels: weeks.map(w => w.label),
+            datasets: [{
+                data: weeklyTotals,
+                backgroundColor: '#f0b4c8',
+            }]
+        },
+        options: {
+            plugins: {legend: {display: false}},
+            scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888' }}, y: { display: false }},
+            responsive: true
+        }
+    })
+
+    document.getElementById('weeklySpendingStats').textContent =
+        `Month to date: $${monthToDate.toFixed(2)} · Avg/week: $${avgPerWeek.toFixed(2)}`
+}
+    
+  
+
+
+populateMonthSelect()
+populateTransactionCategories()
+renderBudget()
+document.getElementById('budgetMonthSelect').onchange = function () {
+    renderBudget()
+    renderDashboardBudget()
+}
+
+document.getElementById('breakdownExpectedBtn').onclick = function() {
+    breakdownMode = 'expected'
+    this.classList.add('active')
+    document.getElementById('breakdownCurrentBtn').classList.remove('active')
+    renderBudget()
+}
+document.getElementById('breakdownCurrentBtn').onclick = function() {
+    breakdownMode = 'current'
+    this.classList.add('active')
+    document.getElementById('breakdownExpectedBtn').classList.remove('active')
+    renderBudget()
+}
+
+
+
+// --- PLAID ---
+
+async function connectBank() {
+    try {
+        const res = await fetch(`${SERVER_URL}/create-link-token`, { method: 'POST' })
+        const data = await res.json()
+        const linkToken = data.link_token
+
+        const handler = Plaid.create({
+            token: linkToken,
+            onSuccess: async function(public_token) {
+                const exchangeRes = await fetch(`${SERVER_URL}/exchange-token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ public_token })
+                })
+                const exchangeData = await exchangeRes.json()
+                const access_token = exchangeData.access_token
+                localStorage.setItem('plaid_access_token', access_token)
+                await fetchBankAccounts(access_token)
+            },
+            onExit: function(err) {
+                if (err) console.error('Plaid exit error:', err)
+            }
+        })
+        handler.open()
+    } catch (err) {
+        console.error('Error connecting bank:', err)
+        alert('Error connecting bank. Please try again.')
+    }
+}
+
+async function fetchBankAccounts(access_token) {
+    try {
+        const balanceRes = await fetch(`${SERVER_URL}/balances`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token })
+        })
+        const balanceData = await balanceRes.json()
+        if (!balanceData.accounts) {
+            console.error('Plaid error:' , balanceData)
+            alert('Error syncing accounts. Please try reconnecting your bank.')
+            return
+        }
+
+        balanceData.accounts.forEach(acc => {
+            const exists = accounts.find(a => a.plaidId === acc.account_id)
+            if (exists) {
+                exists.amount = acc.balances.current
+                exists.available = acc.balances.available
+                exists.type = acc.type
+                exists.subtype = acc.subtype
+            } else {
+                accounts.push({
+                    name: acc.name,
+                    amount: acc.balances.current,
+                    available: acc.balances.available,
+                    type: acc.type,
+                    subtype: acc.subtype,
+                    interestRate: null,
+                    plaidId: acc.account_id,
+                    id: Date.now() + Math.random()
+                })
+            }
+        })
+
+        save()
+        renderAll()
+    } catch (err) {
+        console.error('Error fetching accounts:', err)
+        alert('Error fetching account data. Please try again.')
+    }
+}
+
+const savedPlaidToken = localStorage.getItem('plaid_access_token')
+if (savedPlaidToken) fetchBankAccounts(savedPlaidToken)
+
+ // --- ACCOUNT DETAIL MODAL ---
+let viewingAccountId = null
+
+function openAccountModal(id) {
+    const a = accounts.find(a => a.id === id)
+    if (!a) return
+    viewingAccountId = id
+    document.getElementById('accountModalName').value = a.name
+    document.getElementById('accountModalBalance').textContent = '$' + Math.abs(a.amount).toFixed(2)
+    document.getElementById('accountModalType').textContent = a.subtype ? `${a.subtype} (${a.type})` : a.type || 'Manual'
+    document.getElementById('accountModalInterest').value = a.interestRate || ''
+    const preview = document.getElementById('accountIconPreview')
+    if (a.icon) {
+        preview.src = a.icon
+        preview.style.display = 'block'
+    } else {
+        preview.style.display = 'none'
+        preview.src = ''
+    }
+    document.getElementById('accountModal').style.display = 'flex'
+}
+
+document.getElementById('accountModalCancelBtn').onclick = function() {
+    document.getElementById('accountModal').style.display = 'none'
+    viewingAccountId = null
+}
+
+document.getElementById('accountModalSaveBtn').onclick = function() {
+    const index = accounts.findIndex(a => a.id === viewingAccountId)
+    if (index === -1) return
+    accounts[index].interestRate = parseFloat(document.getElementById('accountModalInterest').value) || null
+    const preview = document.getElementById('accountIconPreview')
+    if (preview.style.display !== 'none') {
+        accounts[index].icon = preview.src
+    }
+    save()
+    document.getElementById('accountModal').style.display = 'none'
+    renderAll()
+}
+
+document.getElementById('accountIconUpload').onchange = function() {
+    const file = this.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = function(e) {
+        const preview = document.getElementById('accountIconPreview')
+        preview.src = e.target.result
+        preview.style.display = 'block'
+    }
+    reader.readAsDataURL(file)
+}
+window.openAccountModal = openAccountModal
+document.getElementById('connectBankBtn').onclick = connectBank
+    
+
+
+
+// --- SPENDING INSIGHTS ---
+let insightsDonutChart = null
+
+function populateInsightMonthSelect() {
+    const select = document.getElementById('insightsMonthSelect')
+    select.innerHTML = ''
+    const now = new Date()
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const label = d.toLocaleDateString('en-US',{month: 'long', year: 'numeric'})
+        const opt = document.createElement('option')
+        opt.value = label
+        opt.textContent = label
+        if (i === 0) opt.selected = true
+        select.appendChild(opt)
+    }
+}
+
+function getPrevMonth(monthStr) {
+    const d = new Date(monthStr)
+    d.setMonth(d.getMonth() - 1)
+    return d.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})
+}
+
+function renderInsights() {
+    const month = document.getElementById('insightsMonthSelect').value
+    if (!month) return
+
+    const monthTx = transactions.filter(t => {
+        if (!t.rawDate) return false
+        const d = parseLocalDate(t.rawDate)
+        const label = d.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})
+        return label === month && t.amount < 0
+    })
+
+    const totalSpent = monthTx.reduce((sum,t) => sum + Math.abs(t.amount), 0)
+    const daysInMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 0).getDate()
+    const dailyAvg = totalSpent / daysInMonth
+
+    document.getElementById('insightsTotalSpent').textContent = '$' + totalSpent.toFixed(2)
+    document.getElementById('insightsDailyAvg').textContent = `$${dailyAvg.toFixed(2)} avg/day`
+    document.getElementById('insightsTxCount').textContent = monthTx.length
+
+    //VS last month
+    const prevMonth = getPrevMonth(month)
+    const prevTx = transactions.filter (t => {
+        if (!t.rawDate) return false
+        const d = parseLocalDate(t.rawDate)
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric'})
+        return label === prevMonth && t.amount < 0
+    })
+    const prevSpent = prevTx.reduce((sum, t) => sum + Math.abs(t.amount), 0)
+    const diff = totalSpent - prevSpent
+    const vsEl = document.getElementById('insightsVsLastMonth')
+    const vsLabel = document.getElementById('insightsVsLastMonthLabel')
+    if (prevSpent === 0) {
+        vsEl.textContent = '-'
+        vsLabel.textContent = 'No data for last month'
+    } else {
+        vsEl.textContent = `${diff >= 0 ? '+$' : '-$'}${Math.abs(diff).toFixed(2)}`
+        vsEl.style.color = diff >= 0 ? '#e05c5c' : '#4caf87'
+        vsLabel.textContent = diff >= 0 ? 'more than last month' : 'less than last month'
+    }
+
+    //Category totals
+    const catSpending = {}
+    monthTx.forEach(t => {
+        const cat = t.category || 'Uncategorized'
+        catSpending[cat] = (catSpending[cat] || 0) + Math.abs(t.amount)
+    })
+
+    const catLabels = Object.keys(catSpending)
+    const catValues = Object.values(catSpending)
+    const catColors = ['#b8b4f0', '#f0d48c', '#f0b4c8', '#a8d8c8', '#f0b8b8', '#c8d8f0', '#d8f0c8']
+
+    if (insightsDonutChart) insightsDonutChart.destroy()
+
+    if (catLabels.length === 0) {
+        document.getElementById('insightsDonut').getContext('2d').clearRect(0, 0, 200, 200)
+        document.getElementById('insightsDonutLegend').innerHTML = '<p style="color:#aaa;font-size:13px;">No expenses this month.</p>'
+    } else {
+        insightsDonutChart = new Chart(document.getElementById('insightsDonut'), {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: catColors.slice(0, catLabels.length),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '65%',
+                plugins: {legend: {display: false}},
+                responsive: false
+            }
+        })
+
+        document.getElementById('insightsDonutLegend').innerHTML = catLabels.map((label, i) => {
+            const pct = totalSpent > 0 ? ((catValues[i] / totalSpent) * 100).toFixed(1) : '0.0'
+            return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${catColors[i]};flex-shrink:0;"></div>
+                    <span style="color:#555;">${label}</span>
+                </div>
+                <span style="color:#888;">${pct}% · $${catValues[i].toFixed(2)}</span>
+            </div>`
+        }).join('')
+    }
+
+    //Biggest expenses
+    const sorted = [...monthTx].sort((a, b) => a.amount - b.amount).slice(0, 8)
+    document.getElementById('insightsBiggest').innerHTML = sorted.length === 0
+        ? '<p style="color:#aaa;font-size:13px;">No expenses this month.</p>'
+        : sorted.map(t => {
+            const iconHTML = getIcon(t.id)
+                ? `<img src="${getIcon(t.id)}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">`
+                : `<div style="width:32px;height:32px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;">💳</div>`
+            return `<div class="insights-expense-row">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    ${iconHTML}
+                    <div>
+                        <div class="insights-expense-name">${t.desc}</div>
+                        <div class="insights-expense-date">${t.date} · ${t.category || 'Uncategorized'}</div>
+                    </div>
+                </div>
+                <span class="neg">-$${Math.abs(t.amount).toFixed(2)}</span>
+            </div>`
+        }).join('')
+}
+
+populateInsightMonthSelect()
+document.getElementById('insightsMonthSelect').onchange = renderInsights
+
+})
