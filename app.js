@@ -120,10 +120,16 @@ function deleteIcon(id) {
 
 function showDashboard(username) {
     document.getElementById('welcomeMsg').textContent = 'Hi, ' + username
+    document.getElementById('dashboardUserName').textContent = username
     loginScreen.style.display = 'none'
     dashboard.style.display = 'block'
     processRecurringTransactions()
     renderAll()
+
+    const month = getSelectedMonth()
+    if (month) {
+        document.getElementById('dashboardHeaderMonth').textContent = month
+    }
 }
 
 loginBtn.onclick = async function() {
@@ -1058,6 +1064,7 @@ renderBudget()
 document.getElementById('budgetMonthSelect').onchange = function () {
     renderBudget()
     renderDashboardBudget()
+    document.getElementById('dashboardHeaderMonth').textContent = this.value
 }
 
 document.getElementById('breakdownExpectedBtn').onclick = function() {
