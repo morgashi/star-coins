@@ -55,33 +55,39 @@ body {
 /* NAV */
 #navbar {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 28px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 220px;
+    min-height: 100vh;
+    padding: 28px 18px;
     background: #FFFFFF;
     border-bottom: 1px solid #D6E3EA;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     z-index: 100;
 }
 .nav-brand {
     font-family: 'Winkle', cursive;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: normal;
+    text-align: center;
     color: #344653;
+    margin-bottom: 35px;
 }
 .nav-links {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
 }
 .nav-link {
     font-size: 13px;
     color: #71818C;
     font-weight: 500;
     cursor: pointer;
-    padding: 7px 12px;
-    border-radius: 999px;
+    padding: 10px 14px;
+    border-radius: 12px;
     transition: background 0.2s ease, color 0.2s ease;
 }
 .nav-link:hover {
@@ -93,23 +99,33 @@ body {
     background: #E4EEF3;
     font-weight: 600;
 }
+.nav-right {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 #welcomeMsg {
     font-size: 13px;
     color: #71818C;
+    text-align: center;
 }
 #logoutBtn {
-    padding: 6px 14px;
+    padding: 7px 14px;
     border-radius: 999px;
     border: 1px solid #D6E3EA;
     background: transparent;
     color: #71818C;
     font-size: 12px;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
 }
 #logoutBtn:hover {
     background: #E4EEF3;
     color: #344653;
+}
+.page {
+    margin-left: 220px;
+    min-height: 100vh;
 }
 
 /* PAGES */
