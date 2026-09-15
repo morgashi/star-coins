@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap');
 @font-face {
     font-family: 'Winkle';
-    src: url('./Winkle-Regular.ttf') format('truetype');
+    src: url('./fonts/Winkle-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -712,7 +712,7 @@ input[type=number] { -moz-appearance: textfield; }
 }
 .tx-card-desc {
     font-family: 'Winkle', cursive;
-    font-size: 11px;
+    font-size: 13px;
     color: #777;
 }
 
