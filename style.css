@@ -145,6 +145,32 @@ body {
     font-weight: 500;
 }
 
+.dashboard-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.dashboard-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #344653;
+}
+.dahsboard-header p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #71818C;
+}
+.dashboard-month {
+    padding: 9px 14px;
+    border: 1px solid #D6E3EA;
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #71818C;
+    font-size: 12px;
+}
+
 /* MAIN GRID */
 .main-grid {
     display: grid;
