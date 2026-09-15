@@ -163,12 +163,14 @@ body {
     color: #71818C;
 }
 .dashboard-month {
+    min-width: 150px;
     padding: 9px 14px;
     border: 1px solid #D6E3EA;
     border-radius: 12px;
     background: #FFFFFF;
     color: #71818C;
     font-size: 12px;
+    text-align: center;
 }
 
 /* MAIN GRID */
