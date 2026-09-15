@@ -253,8 +253,9 @@ body {
     font-size: 18px;
 }
 .tx-card-name {
+    font-family: 'Winkle', cursive;
     font-size: 13px;
-    color: black;
+    color: var(--nimbus-slate);
     margin-top: 2px;
 }
 .tx-card-amount {font-weight: 500;}
