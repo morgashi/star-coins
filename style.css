@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap');
+@font-face {
+    font-family: 'Winkle';
+    src: url('./fonts/Winkle.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
 * { box-sizing: border-box; margin:0; padding: 0; }
 
 body {
@@ -704,9 +711,9 @@ input[type=number] { -moz-appearance: textfield; }
     z-index: 999;
 }
 .tx-card-desc {
+    font-family: 'Winkle', cursive;
     font-size: 11px;
-    color: #888780;
-    margin-top: 2px;
+    color: #777;
 }
 
 /* DASHBOARD BUDGET PROGRESS */
@@ -755,4 +762,279 @@ input[type=number] { -moz-appearance: textfield; }
     padding: 25px 10px;
     color: #999;
     font-size: 12px;
+}
+
+/* ======================================
+    NIMBUS BRAND FOUNDATIONS
+    ===================================== */
+:root {
+    --nimbus-bg: #f3f7fa;
+    --nimbus-white: #FFFFFF;
+    --nimbus-mist: #E4EEF3;
+    --nimbus-blue: #B8D0DF;
+    --nimbus-blue-gray: #8fa8b8;
+    --nimbus-slate: #344653;
+    --nimbus-muted: #71818C;
+    --nimbus-accent: #F3E4b5;
+    --nimbus-border: #D6E3EA;
+
+    --nimbus-font: 'Comfortaa', sans-serif;
+    --nimbus-winkle: 'Winkle', 'Comic Sans Ms', cursive;
+}
+
+/* Main typeface */
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--nimbus-font);
+}
+
+/* Main background + text */
+body {
+    background: var(--nimbus-bg);
+    color: var(--nimbus-slate);
+}
+
+#loginScreen {
+    background: var(--nimbus-bg);
+}
+
+#loginScreen h1 {
+    color: var(--nimbus-slate);
+}
+
+/* Navbar */
+#navbar {
+    background: var(--nimbus-white);
+    border-bottom: 1px solid var(--nimbus-border);
+}
+
+.nav-brand {
+    color: var(--nimbus-blue-gray);
+}
+
+.nav-link {
+    color: var(--nimbus-slate);
+}
+
+.nav-link.active {
+    color: var(--nimbus-blue-gray);
+}
+
+#welcomeMsg {
+    color: var(--nimbus-slate);
+}
+
+#logoutBtn {
+    border-color: var(--nimbus-border);
+    color: var(--nimbus-slate);
+}
+
+/* Panels */
+.panel,
+.budget-panel,
+.proj-panel,
+.modal-box {
+    background: var(--nimbus-white);
+    border-color: var(--nimbus-border);
+}
+
+.panel-title {
+    background: var(--nimbus-mist);
+    color: var(--nimbus-slate);
+}
+
+/* Buttons */
+.panel button,
+.new-btn,
+.modal-save,
+#connectBankBtn {
+    background: var(--nimbus-blue) !important;
+    border-color: var(--nimbus-blue) !important;
+    color: var(--nimbus-slate) !important;
+}
+
+.panel button:hover,
+.new-btn:hover,
+.modal-save:hover,
+#connectBankBtn:hover {
+    background: var(--nimbus-blue-gray) !important;
+    color: white !important;
+}
+
+/* Accounts */
+.account-group-label {
+    background: var(--nimbus-mist);
+    color: var(--nimbus-slate);
+}
+
+/* Transactions */
+.tx-row {
+    border-bottom-color: var(--nimbus-mist);
+}
+
+.tx-card {
+    border-color: var(--nimbus-blue-gray);
+    color: var(--nimbus-slate);
+}
+
+.tx-card:hover {
+    background: var(--nimbus-mist);
+}
+
+.tx-card-name {
+    color: var(--nimbus-slate);
+}
+
+.tx-card-desc {
+    font-family: var(--nimbus-winkle);
+    color: var(--nimbus-blue-gray);
+    font-size: 13px;
+}
+
+.tx-meta,
+.tx-date-label {
+    color: var(--nimbus-muted);
+}
+
+/* Recurring transaction pill */
+.tc-recurring-pill {
+    background: var(--nimbus-mist);
+    color: var(--nimbus-blue-gray);
+}
+
+/* Search + filters */
+.search-input {
+    border-color: var(--nimbus-blue-gray);
+    color: var(--nimbus-slate);
+}
+
+.filter-date,
+.month-select {
+    border-color: var(--nimbus-border);
+    color: var(--nimbus-slate);
+}
+
+/* Toggle buttons */
+.toggle-group {
+    background: var(--nimbus-bg);
+}
+
+.toggle-btn {
+    color: var(--nimbus-muted);
+}
+
+.toggle-btn.active {
+    background: var(--nimbus-blue);
+    color: var(--nimbus-slate);
+}
+
+/* Modals */
+#txModal,
+#accountModal,
+#goalModal {
+    background: rgba(52, 70, 83, 0.16);
+}
+
+.modal-box {
+    color: var(--nimbus-slate);
+}
+
+.modal-title-input,
+.modal-value-input,
+.modal-box select {
+    color: var(--nimbus-slate);
+}
+
+.modal-title-input {
+    border-bottom-color: var(--nimbus-border);
+}
+
+.modal-label {
+    color: var(--nimbus-muted);
+}
+
+.upload-label {
+    border-color: var(--nimbus-border);
+    color: var(--nimbus-slate);
+}
+
+/* Budget */
+.budget-panel-title,
+.proj-panel-title,
+.proj-input-group label,
+.budget-row-pct,
+.proj-metric-label {
+    color: var(--nimbus-muted);
+}
+
+.budget-row {
+    border-bottom-color: var(--nimbus-border);
+}
+
+.budget-row-name,
+.budget-row-current,
+.budget-dollar,
+.budget-input-wrapper input {
+    color: var(--nimbus-slate);
+}
+
+.budget-income-row {
+    border-bottom-color: var(--nimbus-border);
+}
+
+.proj-input-group input {
+    border-color: var(--nimbus-border);
+    color: var(--nimbus-slate);
+}
+
+.proj-metric {
+    background: var(--nimbus-mist);
+}
+
+/* Goals */
+.goal-card {
+    background: #F8FBFD;
+    border-color: var(--nimbus-border);
+}
+
+.goal-name {
+    color: var(--nimbus-slate);
+}
+
+.goal-eta,
+.goal-amounts {
+    color: var(--nimbus-muted);
+}
+
+.goal-progress-bar {
+    background: var(--nimbus-mist);
+}
+
+.goal-progress-fill {
+    background: var(--nimbus-blue-gray);
+}
+
+/* Dashboard budget */
+.dashboard-budget-bar {
+    background: var(--nimbus-mist);
+}
+
+.dashboard-budget-header span:last-child,
+.dashboard-budget-status,
+.dashboard-budget-empty {
+    color: var(--nimbus-muted);
+}
+
+/* Tables */
+.tx-table th {
+    color: var(--nimbus-slate);
+    border-bottom-color: var(--nimbus-blue-gray);
+}
+
+.tx-table td {
+    border-bottom-color: var(--nimbus-border);
+    border-top-color: var(--nimbus-border);
 }
