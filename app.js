@@ -688,6 +688,10 @@ function renderDashboardBudget() {
     if(!container || !monthLabel) return
     const month = getSelectedMonth()
     if(!month) return
+    const headerMonth = document.getElementById('dashboardHeaderMonth')
+    if (headerMonth) {
+        headerMonth.textContent = month
+    }
     monthLabel.textContent = month
     if (!budgetData[month]) budgetData[month] ={}
    BUDGET_CATEGORIES.forEach(category => {
