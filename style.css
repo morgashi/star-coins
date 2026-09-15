@@ -8,7 +8,7 @@
 * { box-sizing: border-box; margin:0; padding: 0; }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Comfortaa', sans-serif;
     background: #f5f0e8;
     color: #2c2c2a;
 }
@@ -58,43 +58,58 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 14px 28px;
-    background: white;
-    border-bottom: 0.5px solid black;
+    background: #FFFFFF;
+    border-bottom: 1px solid #D6E3EA;
     position: sticky;
     top: 0;
     z-index: 100;
 }
 .nav-brand {
-    font-size: 16px;
-    font-weight: bold;
-    color: #f3ceff;
+    font-family: 'Winkle', cursive;
+    font-size: 20px;
+    font-weight: normal;
+    color: #344653;
 }
 .nav-links {
     display: flex;
-    gap:24px;
+    align-items: center;
+    gap: 8px;
 }
 .nav-link {
     font-size: 13px;
-    color: black;
-    font-weight: bold;
+    color: #71818C;
+    font-weight: 500;
     cursor: pointer;
+    padding: 7px 12px;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.nav-link:hover {
+    background: #E4EEF3;
+    color: #344653;
 }
 .nav-link.active {
-    color: #f3ceff;
-    font-weight: bold;
+    color: #344653;
+    background: #E4EEF3;
+    font-weight: 600;
 }
 #welcomeMsg {
     font-size: 13px;
-    color: black;
+    color: #71818C;
 }
 #logoutBtn {
-    padding: 5px 14px;
+    padding: 6px 14px;
     border-radius: 999px;
-    border: 0.5px solid #DDD8F5;
+    border: 1px solid #D6E3EA;
     background: transparent;
-    color: black;
+    color: #71818C;
     font-size: 12px;
     cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+#logoutBtn:hover {
+    background: #E4EEF3;
+    color: #344653;
 }
 
 /* PAGES */
@@ -254,7 +269,7 @@ body {
 }
 .tx-card-name {
     font-family: 'Winkle', cursive;
-    font-size: 13px;
+    font-size: 16px;
     color: var(--nimbus-slate);
     margin-top: 2px;
 }
@@ -885,9 +900,7 @@ body {
     background: var(--nimbus-mist);
 }
 
-.tx-card-name {
-    color: var(--nimbus-slate);
-}
+
 
 .tx-card-desc {
     font-family: var(--nimbus-winkle);
