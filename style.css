@@ -58,7 +58,7 @@ body {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    width: 220px;
+    width: 245px;
     min-height: 100vh;
     padding: 28px 18px;
     background: #FFFFFF;
@@ -138,7 +138,7 @@ body {
     color: #344653;
 }
 .page {
-    margin-left: 220px;
+    margin-left: 245px;
     min-height: 100vh;
 }
 
@@ -191,9 +191,10 @@ body {
 /* MAIN GRID */
 .main-grid {
     display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 16px;
-    padding: 20px 28px;
+    grid-template-columns: 0.8fr 1.2fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    align-items: start;
 }
 
 /* PANELS */
@@ -271,6 +272,8 @@ body {
     padding: 18px;
     padding-bottom: 70px;
     align-self: start;
+    grid-column: 1;
+    grid-row: 1;
 }
 #accountsPanel .panel-title{
     background: #E4EEF3;
@@ -357,6 +360,10 @@ body {
 }
 
 /* TRANSACTIONS */
+#txPanel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+}
 .tx-row {
     display: flex;
     justify-content: space-between;
