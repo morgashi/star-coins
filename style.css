@@ -189,6 +189,35 @@ body {
     border: 0.5px solid #DDD8F5;
     padding: 18px;
 }
+#accountsPanel {
+    position: relative;
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid #D6E3EA;
+    border-radius: 20px;
+    padding: 18px;
+    padding-bottom: 70px;
+}
+#accountsPanel .panel-title{
+    background: #E4EEF3;
+    color: #344653;
+    font-weight: 500;
+}
+#accountsPanel::after {
+    content: "";
+    position: absolute;
+    left: -10%;
+    bottom: -30px;
+    width: 120%;
+    height: 70px;
+    background: #E4EEF3;
+    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
+    z-index: 0;
+}
+#accountsPanel > * {
+    position: relative;
+    z-index: 1;
+}
 .panel-title {
     display: inline-block;
     padding: 4px 16px;
@@ -202,14 +231,12 @@ body {
 
 /* NET WORTH */
 .net-worth-card {
-    position:relative;
-    overflow: hidden;
-    padding: 18px 20px 52px;
-    margin-bottom: 14px;
-    background: #FFFFFF;
-    border: 1px solid #D6E3EA;
-    border-radius: 14px;
-    min-height: 125px;
+    padding: 10px 20px 18px;
+    margin-bottom: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
 }
 .nw-amount {
     font-size: 30px;
@@ -238,14 +265,7 @@ body {
     vertical-align: middle;
 }
 .net-worth-card::after {
-    content: "";
-    position: absolute;
-    left: -10%;
-    bottom: -28px;
-    width: 120%;
-    height: 55px;
-    background: #E4EEF3;
-    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
+    display: none;
 }
 
 /* ACCOUNTS */
