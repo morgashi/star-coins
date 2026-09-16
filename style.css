@@ -203,40 +203,6 @@ body {
     border: 0.5px solid #DDD8F5;
     padding: 18px;
 }
-#accountsPanel {
-    position: relative;
-    overflow: hidden;
-    background: #FFFFFF;
-    border: 1px solid #D6E3EA;
-    border-radius: 20px;
-    padding: 18px;
-    padding-bottom: 70px;
-    align-self: start;
-}
-#accountsPanel .panel-title{
-    background: #E4EEF3;
-    color: #344653;
-    font-weight: 500;
-}
-#accountsPanel::after {
-    content: "";
-    position: absolute;
-    left: -10%;
-    bottom: -30px;
-    width: 120%;
-    height: 70px;
-    background: #E4EEF3;
-    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
-    z-index: 0;
-}
-#accountsPanel > * {
-    position: relative;
-    z-index: 1;
-}
-
-#accountsPanel > .panel-title{
-    display: none;
-}
 .panel-title {
     display: inline-block;
     padding: 4px 16px;
@@ -291,21 +257,45 @@ body {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
-.nw-label::before {
-    content: "";
-    display: block;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: #E4EEF3;
-    flex-shrink: 0;
-    position: relative;
-}
 .net-worth-card::after {
     display: none;
 }
 
 /* ACCOUNTS */
+#accountsPanel {
+    position: relative;
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid #D6E3EA;
+    border-radius: 20px;
+    padding: 18px;
+    padding-bottom: 70px;
+    align-self: start;
+}
+#accountsPanel .panel-title{
+    background: #E4EEF3;
+    color: #344653;
+    font-weight: 500;
+}
+#accountsPanel::after {
+    content: "";
+    position: absolute;
+    left: -10%;
+    bottom: -5px;
+    width: 120%;
+    height: 115px;
+    background: #E4EEF3;
+    border-radius: 50% 50% 0 0 / 65% 65% 0 0;
+    z-index: 0;
+}
+#accountsPanel > * {
+    position: relative;
+    z-index: 1;
+}
+
+#accountsPanel > .panel-title{
+    display: none;
+}
 .account-row {
     display: flex;
     justify-content: space-between;
