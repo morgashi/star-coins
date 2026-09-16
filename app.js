@@ -224,16 +224,18 @@ document.querySelectorAll('.nav-link').forEach(link => {
 })
 
 // --- ACCOUNTS ---
-document.getElementById('addAccountBtn').onclick = function() {
+const addAccountBtn = document.getElementById('addAccountBtn')
     const name = prompt('Account name (e.g. Checking):')
-    if (!name) return
-    const amount = parseFloat(prompt('Current balance:'))
-    if (isNaN(amount)) return
-    accounts.push({ name, amount })
-    save()
-    renderAll()
-    
-}
+    if (addAccountBtn) {
+        addAccountBtn.onclick=function(){
+            if (!name) return
+            const amount = parseFloat(prompt('Current balance:'))
+            if (isNaN(amount)) return
+            accounts.push({ name, amount })
+            save()
+            renderAll()
+        }
+    }
 
 document.getElementById('accountDeleteBtn').onclick = function() {
     if (viewingAccountId === null) return
