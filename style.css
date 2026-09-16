@@ -105,6 +105,20 @@ body {
     flex-direction: column;
     gap: 10px;
 }
+#connectBankBtn {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: #E4EEF3;
+    color: #344653;
+    font-family: 'Comfortaa', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    margin: 0 0 6px;
+}
+#connectBankBtn:hover {
+    background: #C9DCE5;
+}
 #welcomeMsg {
     font-size: 13px;
     color: #71818C;
@@ -288,8 +302,14 @@ body {
     font-weight: bold;
     margin: 10px 0 8px;
 }
-.pos { color: black;}
-.neg { color: black;}
+.pos {
+    color: #344653;
+    font-size: 13px;
+}
+.neg {
+    color: #71818C;
+    font-size: 13px;
+}
 
 /* PANEL BUTTONS */
 .panel button {
@@ -304,12 +324,6 @@ body {
     margin-top: 10px;
 }
 
-/* CONNECT BANK BUTTON */
-#connectBankBtn {
-    background: #f3ceff !important;
-    color: black !important;
-    border-color: #f3ceff !important;
-}
 
 /* NEW BUTTON */
 .new-btn {
