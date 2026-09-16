@@ -202,17 +202,50 @@ body {
 
 /* NET WORTH */
 .net-worth-card {
-    padding: 18px;
+    position:relative;
+    overflow: hidden;
+    padding: 18px 20px 52px;
     margin-bottom: 14px;
-    background: #F3F7FA;
+    background: #FFFFFF;
     border: 1px solid #D6E3EA;
     border-radius: 14px;
+    min-height: 125px;
 }
 .nw-amount {
     font-size: 30px;
-    font-weight: 600;
+    font-weight: 500;
     color: #344653;
-    margin: 4px 0 0;
+    margin: 6px 0 0;
+}
+.nw-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #344653;
+    margin: 0;
+}
+.nw-label::before {
+    content: "▤";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-right: 9px;
+    border-radius: 50%;
+    background: #E4EEF3;
+    color: #8fa8b8;
+    font-size: 15px;
+    vertical-align: middle;
+}
+.net-worth-card::after {
+    content: "";
+    position: absolute;
+    left: -10%;
+    bottom: -28px;
+    width: 120%;
+    height: 55px;
+    background: #E4EEF3;
+    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
 }
 
 /* ACCOUNTS */
