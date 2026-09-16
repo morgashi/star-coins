@@ -277,20 +277,26 @@ body {
     color: #344653;
     font-weight: 500;
 }
-#accountsPanel::after {
-    content: "";
-    position: absolute;
-    left: -10%;
-    bottom: -25px;
-    width: 120%;
-    height: 75px;
-    background: #E4EEF3;
-    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
-    z-index: 0;
-}
 #accountsPanel > * {
     position: relative;
     z-index: 1;
+}
+.accounts-wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 90px;
+    z-index: 0;
+    overflow: hidden;
+}
+.accounts-wave svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.accounts-wave path {
+    fill: #E4EEF3;
 }
 
 #accountsPanel > .panel-title{
