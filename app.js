@@ -127,8 +127,9 @@ function showDashboard(username) {
     renderAll()
 
     const month = getSelectedMonth()
-    if (month) {
-        document.getElementById('dashboardHeaderMonth').textContent = month
+    const headerMonth = document.getElementById('dashboardHeaderMonth')
+    if (headerMonth && month) {
+        headerMonth.textContent = month
     }
 }
 
