@@ -281,11 +281,11 @@ body {
     content: "";
     position: absolute;
     left: -10%;
-    bottom: -5px;
+    bottom: -25px;
     width: 120%;
-    height: 115px;
+    height: 75px;
     background: #E4EEF3;
-    border-radius: 50% 50% 0 0 / 65% 65% 0 0;
+    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
     z-index: 0;
 }
 #accountsPanel > * {
