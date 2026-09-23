@@ -197,10 +197,12 @@ body {
 
     .main-grid {
     display: grid;
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1fr);
     gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
     align-items: start;
     padding: 20px 28px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
     }
 
     .main-grid > .panel,
@@ -213,28 +215,6 @@ body {
 
     /* NET WORTH PANEL */
 
-    #accountsPanel {
-        padding: 20px;
-        height: 390;
-        overflow: hidden;
-        box-sizing: border-box;
-        position: relative;
-        background: #FFFFFF;
-        border: 1px solid #D6E3EA;
-        border-radius: 20px;
-        align-self: start;
-        grid-column: 1;
-        grid-row: 1;
-    }
-    
-    #accountsPanel > * {
-    position: relative;
-    z-index: 1;
-    }
-
-    #accountsPanel .panel-title {
-        display: none;
-    }
 
     .net-worth-card {
         padding: 0;
@@ -283,6 +263,28 @@ body {
     }
 
     /* ACCOUNTS */
+    #accountsPanel {
+        padding: 20px;
+        height: 390px;
+        overflow: hidden;
+        box-sizing: border-box;
+        position: relative;
+        background: #FFFFFF;
+        border: 1px solid #D6E3EA;
+        border-radius: 20px;
+        align-self: start;
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    #accountsPanel > *:not(.accounts-wave) {
+    position: relative;
+    z-index: 1;
+    }
+
+    #accountsPanel .panel-title {
+        display: none;
+    }
 
     .account-group-label {
         display: inline-block;
@@ -308,10 +310,15 @@ body {
     /* NET WORTH WAVE */
 
     .accounts-wave {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
-        height: 60px;
-        margin-top: 2px;
+        height: 95px;
+        margin: 0;
         overflow: hidden;
+        z-index: 0;
     }
     
     .accounts-wave svg {
@@ -326,7 +333,7 @@ body {
 
     /* TRANSACTIONS PANEL */
     #txPanel {
-        padding: 24px;
+        width: 100%;
         grid-column: 2;
         grid-row: 1;
         box-sizing: border-box;
@@ -336,11 +343,15 @@ body {
         margin: 0 8px 14px 0;
     }
 
+    #accountsPanel, #txPanel {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
     /* MONTHLY BUDGET */
 
     #dashboardBudgetPanel {
         margin: 0;
-        padding: 18px 20px;
         width: 100%;
         box-sizing: border-box;
         grid-column: 1;
