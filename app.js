@@ -41,7 +41,7 @@ const BUDGET_CATEGORIES = [
 ]
 function populateTransactionCategories() {
     const select = document.getElementById('txCategory')
-    select.innerHTML = '<option value="">Select category...</option'
+    select.innerHTML = '<option value="">Select category...</option>'
     BUDGET_CATEGORIES.forEach(categoryGroup => {
         const group = document.createElement('optgroup')
         group.label = categoryGroup.name
@@ -576,7 +576,7 @@ function txCardHTML(t) {
             ${iconHTML}
             <div>
                 <div class="tx-card-name">${t.desc}</div>
-                <div class="tx-card-desc">${t.date}${t.recurring ? '<span class="tx-recurring=pill">↻</span>' : ''}</div>
+                <div class="tx-card-desc">${t.date}${t.recurring ? '<span class="tc-recurring-pill">↻</span>' : ''}</div>
             </div>
         </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
@@ -690,7 +690,7 @@ function renderDashboardBudget() {
     }
    })
    const spending = getCurrentSpendingForMonth(month)
-  
+
    // --- OVERALL DONUT (total expected vs total actual across every category) ---
    let totalExpected = 0
    BUDGET_CATEGORIES.forEach(category => {
@@ -698,8 +698,7 @@ function renderDashboardBudget() {
             totalExpected += budgetData[month][category.name][item] || 0
         })
    })
-
-   const totalActual = Object.values(spending).reduce((a,b) => a + b, 0)
+   const totalActual = Object.values(spending).reduce((a, b) => a + b, 0)
    const pct = totalExpected > 0 ? Math.round((totalActual / totalExpected) * 100) : 0
    const ringPct = Math.max(0, Math.min(pct, 100))
 
@@ -717,20 +716,24 @@ function renderDashboardBudget() {
    if (pctLabel) pctLabel.textContent = pct + '%'
    if (totalLabel) totalLabel.textContent = `$${totalActual.toFixed(0)} of $${totalExpected.toFixed(0)}`
    if (barFill) {
-    barFill.style.width = ringPct + '%'
-    barFill.style.background = ringColor
+        barFill.style.width = ringPct + '%'
+        barFill.style.background = ringColor
    }
    if (statusText) {
         statusText.classList.remove('warning', 'over-budget')
         if (totalExpected === 0) {
-        statusText.textContent = 'Add a budget to see your progress.'
+            statusText.textContent = 'Add a budget to see your progress.'
+        } else if (pct >= 100) {
+            statusText.textContent = `$${(totalActual - totalExpected).toFixed(2)} over budget`
+            statusText.classList.add('over-budget')
         } else if (pct >= 80) {
-        statusText.textContent = `$${(totalExpected - totalActual).toFixed(2)} remaining · watch your spending`
-        statusText.classList.add('warning')
+            statusText.textContent = `$${(totalExpected - totalActual).toFixed(2)} remaining · watch your spending`
+            statusText.classList.add('warning')
         } else {
-        statusText.textContent = "You're on track ✦"
+            statusText.textContent = "You're on track ✦"
         }
    }
+
    // --- PER-CATEGORY DETAIL LIST ---
    let html = ''
    BUDGET_CATEGORIES.forEach(category => {
