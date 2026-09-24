@@ -248,8 +248,8 @@ body {
 
     .main-grid {
     display: grid;
-    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1fr);
-    grid-template-areas: 
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
         "networth transactions"
         "budget motivation";
     gap: 20px;
@@ -268,6 +268,7 @@ body {
     }
 
     /* NET WORTH PANEL */
+
 
     .net-worth-card {
         padding: 0;
@@ -394,20 +395,17 @@ body {
     #txPanel .panel-title {
         margin: 0;
     }
-
-    .tx-panel-header{
+    .tx-panel-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 6px;
     }
-
     .tx-panel-header-right {
         display: flex;
         align-items: center;
         gap: 12px;
     }
-
     .see-all-link {
         font-size: 12px;
         font-weight: 600;
@@ -416,12 +414,10 @@ body {
         background: none;
         border-radius: 0;
     }
-
     .see-all-link:hover {
         color: var(--nimbus-slate);
         background: none;
     }
-
     #addTxBtn {
         margin: 0;
     }
@@ -448,7 +444,6 @@ body {
         gap: 20px;
         margin: 4px 0 6px;
     }
-    
     .budget-donut-ring {
         position: relative;
         width: 92px;
@@ -458,7 +453,6 @@ body {
         background: conic-gradient(var(--nimbus-blue-gray) 0deg, var(--nimbus-mist) 0deg);
         transition: background 0.3s ease;
     }
-
     .budget-donut-ring::before {
         content: '';
         position: absolute;
@@ -466,7 +460,6 @@ body {
         border-radius: 50%;
         background: var(--nimbus-white);
     }
-
     .budget-donut-center {
         position: absolute;
         inset: 0;
@@ -476,14 +469,11 @@ body {
         justify-content: center;
         z-index: 1;
     }
-
     .budget-donut-pct {
-
-        font-size: 10px;
+        font-size: 18px;
         font-weight: 600;
         color: var(--nimbus-slate);
     }
-
     .budget-donut-label {
         font-size: 10px;
         color: var(--nimbus-muted);
@@ -498,13 +488,13 @@ body {
         color: var(--nimbus-slate);
         margin-bottom: 8px;
     }
-    .budget-donut-status{
+    .budget-donut-status {
         margin-top: 6px;
         font-size: 12px;
         color: var(--nimbus-muted);
     }
-    .budget-donut-status.warning {color: #c99a6b; font-weight: 500;}
-    .budget-donut-status.dashboard-budget-status.over-budget {color: #c77b8a; font-weight: 600;}
+    .budget-donut-status.warning { color: #c99a6b; font-weight: 500; }
+    .budget-donut-status.over-budget { color: #c77b8a; font-weight: 600; }
     .budget-category-detail-label {
         margin: 18px 0 6px;
         font-size: 11px;
@@ -515,7 +505,7 @@ body {
     /* MOTIVATION / TIP CARD */
     .motivation-panel {
         grid-area: motivation;
-        border: 1px solid #D8E3EA;
+        border: 1px solid #d8e3ea;
         border-radius: 18px;
         padding: 22px;
         display: flex;
@@ -670,7 +660,7 @@ body {
     flex-shrink: 0;
 }
 .tx-card-name {
-    font-family: 'Comfortaa', sans-serif;
+    font-family: var(--nimbus-font);
     font-weight: 600;
     font-size: 13px;
     color: var(--nimbus-slate);
@@ -1130,8 +1120,8 @@ input[type=number] { -moz-appearance: textfield; }
     z-index: 999;
 }
 .tx-card-desc {
-    font-family: 'Winkle', cursive;
-    font-size: 13px;
+    font-family: var(--nimbus-font);
+    font-size: 11px;
     color: #777;
 }
 
@@ -1295,7 +1285,7 @@ body {
 }
 
 .tx-card {
-    border-color: var(--nimbus-blue-gray);
+    border-bottom-color: var(--nimbus-mist);
     color: var(--nimbus-slate);
 }
 
@@ -1306,9 +1296,9 @@ body {
 
 
 .tx-card-desc {
-    font-family: var(--nimbus-winkle);
-    color: var(--nimbus-blue-gray);
-    font-size: 13px;
+    font-family: var(--nimbus-font);
+    color: var(--nimbus-muted);
+    font-size: 11px;
 }
 
 .tx-meta,
@@ -1455,6 +1445,3 @@ body {
     border-bottom-color: var(--nimbus-border);
     border-top-color: var(--nimbus-border);
 }
-
-
-
