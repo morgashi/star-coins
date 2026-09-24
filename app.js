@@ -68,6 +68,12 @@ function parseLocalDate(dateString) {
 let editingId = null
 let viewMode = 'list'
 
+// Populate these BEFORE the auth check below, so that a returning session
+// (restored via a saved token) has a real selected month/category list to
+// render against the moment showDashboard() runs, instead of an empty select.
+populateMonthSelect()
+populateTransactionCategories()
+
 // --- PLAID / SERVER ---
 const SERVER_URL = 'https://star-coins-server.onrender.com'
 
@@ -672,10 +678,9 @@ function getCurrentSpendingForMonth(monthStr) {
     return spending
 }
 function renderDashboardBudget() {
-    const container = document.getElementById('dashboardBudgetProgress')
     const monthLabel = document.getElementById('dashboardBudgetMonth')
 
-    if(!container || !monthLabel) return
+    if(!monthLabel) return
     const month = getSelectedMonth()
     if(!month) return
     const headerMonth = document.getElementById('dashboardHeaderMonth')
@@ -733,65 +738,6 @@ function renderDashboardBudget() {
             statusText.textContent = "You're on track ✦"
         }
    }
-
-   // --- PER-CATEGORY DETAIL LIST ---
-   let html = ''
-   BUDGET_CATEGORIES.forEach(category => {
-    let expected = 0
-    let actual = 0
-
-    category.items.forEach(item => {
-        expected += budgetData[month][category.name][item] || 0
-        actual += spending[item] || 0
-    })
-
-    if (expected === 0 && actual === 0) return
-    
-    const hasBudget = expected > 0
-    const percentage = hasBudget ? (actual/expected) * 100 : 0
-    
-    const barWidth = Math.min(percentage, 100)
-    const difference = expected - actual
-
-    let status = 'No budget set'
-    let statusClass = ''
-    if (hasBudget && percentage >= 100) {
-        status = `⚠️ $${Math.abs(difference).toFixed(2)} over budget`
-        statusClass = 'over-budget'
-    } else if (hasBudget && percentage >= 80) {
-        status = `⚠️ $${difference.toFixed(2)} remaining`
-        statusClass = 'warning'
-    } else if (hasBudget) {
-        status = `$${difference.toFixed(2)} remaining`
-    }
-
-    html += `
-        <div class="dashboard-budget-item">
-            <div class="dashboard-budget-header">
-                <span>${category.name}</span>
-                <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
-            </div>
-            
-            ${hasBudget
-                ?`<div class="dashboard-budget-bar">
-                    <div class="dashboard-budget-fill" style ="width:${barWidth}%; background-color:${category.color};"></div>
-                    </div>`
-                : `<div class="dashboard-budget-bar"></div>`
-            }
-            
-            <div class="dashboard-budget-status ${statusClass}">${status}</div>
-        </div>
-    `
-   })
-
-   if(html === '') {
-    html = `
-        <div class="dashboard-budget-empty">
-            Add a budget to see your progress.
-        </div>
-    `
-   }
-   container.innerHTML = html
 }
 
 function renderBudget() {
@@ -1097,8 +1043,6 @@ console.log('WEEKLY TOTALS', weeklyTotals)
   
 
 
-populateMonthSelect()
-populateTransactionCategories()
 renderBudget()
 document.getElementById('budgetMonthSelect').onchange = function () {
     renderBudget()
