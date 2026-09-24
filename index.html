@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" aria-controls="width=device-width, initial scale=1">
     <title>Star Coins</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
@@ -38,16 +40,33 @@
             <nav id="navbar">
                 <span class="nav-brand">★ Star Coins</span>
                 <div class="nav-links">
-                    <span class="nav-link active" data-page="dashboardPage">Home</span>
-                    <span class="nav-link" data-page="transactionsPage">All Transactions</span>
-                    <span class="nav-link" data-page="budgetPage">Monthly Budget</span>
-                    <span class="nav-link" data-page="insightsPage">Spending Insights</span>
+                    <span class="nav-link active" data-page="dashboardPage">
+                        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5"/>
+                        <path d= "M6 10v8.5a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1V10"/></svg>
+                        Home
+                    </span>
+                    <span class="nav-link" data-page="transactionsPage">
+                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"
+                        rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+                        All Transactions
+                    </span>
+                    <span class="nav-link" data-page="budgetPage">
+                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15"
+                        rx="3"/><path d="M4 9h16M8 3v3M16 3v3"/></svg>
+                        Monthly Budget
+                    </span>
+                    <span class="nav-link" data-page="insightsPage">
+                        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M5 19V5M5 19h14"/>
+                        <path d="M8 16v-4M12 16V9M16 16v-7"/></svg>
+                        Spending Insights
+                    </span>
                 </div>
                 <div class="nav-right">
                     <button id="connectBankBtn">+ Connect Bank</button>
                     <span id="welcomeMsg"></span>
                     <button id="logoutBtn">Logout</button>
                 </div>
+                <p class="nav-tagline">Plan today, breathe easier tomorrow</p>
             </nav>
             <!-- DASHBOARD PAGE -->
             <div id="dashboardPage" class="page">
@@ -56,8 +75,13 @@
                         <h1>Good morning, <span id="dashboardUserName"></span> ✨</h1>
                         <p>Here's where your money stands today.</p>
                     </div>
-                    <div class="dashboard-month">
-                        <span id="dashboardHeaderMonth"></span>
+                    <div class="dashboard-header-right"></div>
+                        <div class="dashboard-month">
+                            <svg class="cal-icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15"
+                            rx="3"/><path d="M4 9h16M8 3v3M16 3v3"/></svg>
+                            <span id="dashboardHeaderMonth"></span>
+                        </div>
+                        <div class="user-avatar" id="userAvatar">✦</div>
                     </div>
                 </div>
                 <div class="main-grid">
@@ -91,8 +115,13 @@
                         </div>
                     </div>
                     <div class="panel" id="txPanel">
-                        <p class="panel-title">Recent Transactions</p>
-                        <button id="addTxBtn">+ Add Transaction</button>
+                        <div class="tx-panel-header">
+                            <p class="panel-title">Recent Transactions</p>
+                            <div class="tx-panel-header-right">
+                                <button id="addTxBtn">+ Add Transaction</button>
+                                <span class="nav-link see-all-link" data-page="transactionsPage">See all →</span>
+                            </div>
+                        </div>
                         <div id="txList"></div>
                     </div>
                     <!-- MONTHLY BUDGET PROGRESS -->
@@ -101,7 +130,26 @@
                             <p class="panel-title" style="margin:0;">Monthly Budget</p>
                             <span id="dashboardBudgetMonth" style="font-size:12px;color:#888;"></span>
                         </div>
+                        <div class="budget-donut-row">
+                            <div class="budget-donut-ring" id="dashboardBudgetRing">
+                                <div class="budget-donut-center">
+                                    <span class="budget-donut pct" id="dashboardBudgetPct">0%</span>
+                                    <span class="budget-donut-label">spent</span>
+                                </div>
+                            </div>
+                            <div class="budget-donut-stats">
+                                <p class="budget-donut-total" id="dashboardBudgetTotal">$0 of $0</p>
+                                <div class="dashboard-budget-bar"><div class="dashboard-budget-fill" id="dashboardBudgetBarFill" style="width:0%;"></div></div>
+                                <p class="budget-donut-status" id="dashboardBudgetStatusText"></p>
+                            </div>
+                        </div>
+                        <p class="budget-category-detail-label">By category</p>
                         <div id="dashboardBudgetProgress"></div>
+                    </div>
+                    <!-- DECORATIVE / TIP CARD -->
+                    <div class="panel motivation-panel">
+                        <div class="motivation-badge">✦</div>
+                        <p class="motivation-text">A more intentional you<br>is always a good idea.</p>
                     </div>
                 </div>
                 <!-- ACCOUNT DETAIL MODAL -->
