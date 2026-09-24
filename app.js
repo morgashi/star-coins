@@ -690,6 +690,48 @@ function renderDashboardBudget() {
     }
    })
    const spending = getCurrentSpendingForMonth(month)
+  
+   // --- OVERALL DONUT (total expected vs total actual across every category) ---
+   let totalExpected = 0
+   BUDGET_CATEGORIES.forEach(category => {
+        category.items.forEach(item => {
+            totalExpected += budgetData[month][category.name][item] || 0
+        })
+   })
+
+   const totalActual = Object.values(spending).reduce((a,b) => a + b, 0)
+   const pct = totalExpected > 0 ? Math.round((totalActual / totalExpected) * 100) : 0
+   const ringPct = Math.max(0, Math.min(pct, 100))
+
+   const ring = document.getElementById('dashboardBudgetRing')
+   const pctLabel = document.getElementById('dashboardBudgetPct')
+   const totalLabel = document.getElementById('dashboardBudgetTotal')
+   const barFill = document.getElementById('dashboardBudgetBarFill')
+   const statusText = document.getElementById('dashboardBudgetStatusText')
+
+   let ringColor = 'var(--nimbus-blue-gray)'
+   if (pct >= 100) ringColor = '#c77b8a'
+   else if (pct >= 80) ringColor = '#c99a6b'
+
+   if (ring) ring.style.background = `conic-gradient(${ringColor} ${ringPct * 3.6}deg, var(--nimbus-mist) 0deg)`
+   if (pctLabel) pctLabel.textContent = pct + '%'
+   if (totalLabel) totalLabel.textContent = `$${totalActual.toFixed(0)} of $${totalExpected.toFixed(0)}`
+   if (barFill) {
+    barFill.style.width = ringPct + '%'
+    barFill.style.background = ringColor
+   }
+   if (statusText) {
+        statusText.classList.remove('warning', 'over-budget')
+        if (totalExpected === 0) {
+        statusText.textContent = 'Add a budget to see your progress.'
+        } else if (pct >= 80) {
+        statusText.textContent = `$${(totalExpected - totalActual).toFixed(2)} remaining · watch your spending`
+        statusText.classList.add('warning')
+        } else {
+        statusText.textContent = "You're on track ✦"
+        }
+   }
+   // --- PER-CATEGORY DETAIL LIST ---
    let html = ''
    BUDGET_CATEGORIES.forEach(category => {
     let expected = 0
