@@ -231,8 +231,9 @@ body {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: var(--nimbus-mist);
-    color: var(--nimbus-blue-gray);
+    background: var(--nimbus-blue);
+    border: 1px solid var(--nimbus-border);
+    color: var(--nimbus-slate);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -244,6 +245,8 @@ body {
 
     #dashboardPage {
     width: 100%;
+    padding: 28px 28px 24px 40px;
+    box-sizing: border-box;
     }
 
     .main-grid {
@@ -256,7 +259,6 @@ body {
     width: 100%;
     box-sizing: border-box;
     align-items: start;
-    padding: 20px 28px;
     }
 
     .main-grid > .panel,
@@ -319,7 +321,8 @@ body {
     /* ACCOUNTS */
     #accountsPanel {
         padding: 20px;
-        height: 390px;
+        min-height: 220px;
+        max-height: 260px;
         overflow: hidden;
         box-sizing: border-box;
         position: relative;
@@ -368,7 +371,7 @@ body {
         right: 0;
         bottom: 0;
         width: 100%;
-        height: 95px;
+        height: 60px;
         margin: 0;
         overflow: hidden;
         z-index: 0;
@@ -495,12 +498,6 @@ body {
     }
     .budget-donut-status.warning { color: #c99a6b; font-weight: 500; }
     .budget-donut-status.over-budget { color: #c77b8a; font-weight: 600; }
-    .budget-category-detail-label {
-        margin: 18px 0 6px;
-        font-size: 11px;
-        letter-spacing: 0.04em;
-        color: var(--nimbus-muted);
-    }
 
     /* MOTIVATION / TIP CARD */
     .motivation-panel {
