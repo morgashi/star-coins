@@ -21,12 +21,12 @@ const BUDGET_CATEGORIES = [
     {
         name: 'Housing + Utilities',
         color:'#b8d4f0',
-        items: ['Rent + Fees', 'Utilities', 'Internet Bill', "Renter's Insurance"]
+        items: ['Rent + Fees', 'Utilities', 'Internet Bill', "Parking"]
     },
     {
         name: 'Necessities',
         color: '#f0d4f0',
-        items: ['Groceries', 'Personal Care', 'Healthcare', 'Gas']
+        items: ['Groceries', 'Personal Care', 'Gas']
     },
     {
         name: 'Fun',
@@ -41,7 +41,7 @@ const BUDGET_CATEGORIES = [
 ]
 function populateTransactionCategories() {
     const select = document.getElementById('txCategory')
-    select.innerHTML = '<option value="">Select category...</option>'
+    select.innerHTML = '<option value="">Select category...</option'
     BUDGET_CATEGORIES.forEach(categoryGroup => {
         const group = document.createElement('optgroup')
         group.label = categoryGroup.name
@@ -68,9 +68,6 @@ function parseLocalDate(dateString) {
 let editingId = null
 let viewMode = 'list'
 
-// Populate these BEFORE the auth check below, so that a returning session
-// (restored via a saved token) has a real selected month/category list to
-// render against the moment showDashboard() runs, instead of an empty select.
 populateMonthSelect()
 populateTransactionCategories()
 
@@ -582,7 +579,7 @@ function txCardHTML(t) {
             ${iconHTML}
             <div>
                 <div class="tx-card-name">${t.desc}</div>
-                <div class="tx-card-desc">${t.date}${t.recurring ? '<span class="tc-recurring-pill">↻</span>' : ''}</div>
+                <div class="tx-card-desc">${t.date}${t.recurring ? '<span class="tx-recurring=pill">↻</span>' : ''}</div>
             </div>
         </div>
         <span class="${t.amount >= 0 ? 'pos' : 'neg'} tx-card-amount">
@@ -678,9 +675,10 @@ function getCurrentSpendingForMonth(monthStr) {
     return spending
 }
 function renderDashboardBudget() {
+    const container = document.getElementById('dashboardBudgetProgress')
     const monthLabel = document.getElementById('dashboardBudgetMonth')
 
-    if(!monthLabel) return
+    if(!container || !monthLabel) return
     const month = getSelectedMonth()
     if(!month) return
     const headerMonth = document.getElementById('dashboardHeaderMonth')
@@ -695,7 +693,7 @@ function renderDashboardBudget() {
     }
    })
    const spending = getCurrentSpendingForMonth(month)
-
+  
    // --- OVERALL DONUT (total expected vs total actual across every category) ---
    let totalExpected = 0
    BUDGET_CATEGORIES.forEach(category => {
@@ -703,7 +701,8 @@ function renderDashboardBudget() {
             totalExpected += budgetData[month][category.name][item] || 0
         })
    })
-   const totalActual = Object.values(spending).reduce((a, b) => a + b, 0)
+
+   const totalActual = Object.values(spending).reduce((a,b) => a + b, 0)
    const pct = totalExpected > 0 ? Math.round((totalActual / totalExpected) * 100) : 0
    const ringPct = Math.max(0, Math.min(pct, 100))
 
@@ -721,23 +720,78 @@ function renderDashboardBudget() {
    if (pctLabel) pctLabel.textContent = pct + '%'
    if (totalLabel) totalLabel.textContent = `$${totalActual.toFixed(0)} of $${totalExpected.toFixed(0)}`
    if (barFill) {
-        barFill.style.width = ringPct + '%'
-        barFill.style.background = ringColor
+    barFill.style.width = ringPct + '%'
+    barFill.style.background = ringColor
    }
    if (statusText) {
         statusText.classList.remove('warning', 'over-budget')
         if (totalExpected === 0) {
-            statusText.textContent = 'Add a budget to see your progress.'
-        } else if (pct >= 100) {
-            statusText.textContent = `$${(totalActual - totalExpected).toFixed(2)} over budget`
-            statusText.classList.add('over-budget')
+        statusText.textContent = 'Add a budget to see your progress.'
         } else if (pct >= 80) {
-            statusText.textContent = `$${(totalExpected - totalActual).toFixed(2)} remaining · watch your spending`
-            statusText.classList.add('warning')
+        statusText.textContent = `$${(totalExpected - totalActual).toFixed(2)} remaining · watch your spending`
+        statusText.classList.add('warning')
         } else {
-            statusText.textContent = "You're on track ✦"
+        statusText.textContent = "You're on track ✦"
         }
    }
+   // --- PER-CATEGORY DETAIL LIST ---
+   let html = ''
+   BUDGET_CATEGORIES.forEach(category => {
+    let expected = 0
+    let actual = 0
+
+    category.items.forEach(item => {
+        expected += budgetData[month][category.name][item] || 0
+        actual += spending[item] || 0
+    })
+
+    if (expected === 0 && actual === 0) return
+    
+    const hasBudget = expected > 0
+    const percentage = hasBudget ? (actual/expected) * 100 : 0
+    
+    const barWidth = Math.min(percentage, 100)
+    const difference = expected - actual
+
+    let status = 'No budget set'
+    let statusClass = ''
+    if (hasBudget && percentage >= 100) {
+        status = `⚠️ $${Math.abs(difference).toFixed(2)} over budget`
+        statusClass = 'over-budget'
+    } else if (hasBudget && percentage >= 80) {
+        status = `⚠️ $${difference.toFixed(2)} remaining`
+        statusClass = 'warning'
+    } else if (hasBudget) {
+        status = `$${difference.toFixed(2)} remaining`
+    }
+
+    html += `
+        <div class="dashboard-budget-item">
+            <div class="dashboard-budget-header">
+                <span>${category.name}</span>
+                <span>$${actual.toFixed(2)} / $${expected.toFixed(2)}</span>
+            </div>
+            
+            ${hasBudget
+                ?`<div class="dashboard-budget-bar">
+                    <div class="dashboard-budget-fill" style ="width:${barWidth}%; background-color:${category.color};"></div>
+                    </div>`
+                : `<div class="dashboard-budget-bar"></div>`
+            }
+            
+            <div class="dashboard-budget-status ${statusClass}">${status}</div>
+        </div>
+    `
+   })
+
+   if(html === '') {
+    html = `
+        <div class="dashboard-budget-empty">
+            Add a budget to see your progress.
+        </div>
+    `
+   }
+   container.innerHTML = html
 }
 
 function renderBudget() {
@@ -1043,6 +1097,8 @@ console.log('WEEKLY TOTALS', weeklyTotals)
   
 
 
+populateMonthSelect()
+populateTransactionCategories()
 renderBudget()
 document.getElementById('budgetMonthSelect').onchange = function () {
     renderBudget()
