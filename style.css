@@ -243,7 +243,6 @@ body {
 /* DASHBOARD LAYOUT */
 
     #dashboardPage {
-    width: 100%;
     padding: 28px 28px 24px 40px;
     box-sizing: border-box;
     }
@@ -533,7 +532,7 @@ body {
         overflow: visible;
     }
     .motivation-cloud {
-        fill: var(--nimbus-white);
+        fill: var(--nimbus-mist);
     }
     .motivation-moon {
         fill: var(--nimbus-accent);
