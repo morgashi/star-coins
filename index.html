@@ -41,23 +41,19 @@
                 <span class="nav-brand">★ Star Coins</span>
                 <div class="nav-links">
                     <span class="nav-link active" data-page="dashboardPage">
-                        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5"/>
-                        <path d= "M6 10v8.5a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1V10"/></svg>
+                        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5"/><path d="M6 10v8.5a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1V10"/></svg>
                         Home
                     </span>
                     <span class="nav-link" data-page="transactionsPage">
-                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"
-                        rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
                         All Transactions
                     </span>
                     <span class="nav-link" data-page="budgetPage">
-                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15"
-                        rx="3"/><path d="M4 9h16M8 3v3M16 3v3"/></svg>
+                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 9h16M8 3v3M16 3v3"/></svg>
                         Monthly Budget
                     </span>
                     <span class="nav-link" data-page="insightsPage">
-                        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M5 19V5M5 19h14"/>
-                        <path d="M8 16v-4M12 16V9M16 16v-7"/></svg>
+                        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M5 19V5M5 19h14"/><path d="M8 16v-4M12 16V9M16 16v-7"/></svg>
                         Spending Insights
                     </span>
                 </div>
@@ -66,7 +62,7 @@
                     <span id="welcomeMsg"></span>
                     <button id="logoutBtn">Logout</button>
                 </div>
-                <p class="nav-tagline">Plan today, breathe easier tomorrow</p>
+                <p class="nav-tagline">Small steps,<br>brighter tomorrows ✦</p>
             </nav>
             <!-- DASHBOARD PAGE -->
             <div id="dashboardPage" class="page">
@@ -75,12 +71,9 @@
                         <h1>Good morning, <span id="dashboardUserName"></span> ✨</h1>
                         <p>Here's where your money stands today.</p>
                     </div>
-                    <div class="dashboard-header-right"></div>
+                    <div class="dashboard-header-right">
                         <div class="dashboard-month">
-                            <svg class="cal-icon" viewBox="0 0 24 24">
-                                <rect x="4" y="5" width="16" height="15" rx="3"/>
-                                <path d="M4 9h16M8 3v3M16 3v3"/>
-                            </svg>
+                            <svg class="cal-icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 9h16M8 3v3M16 3v3"/></svg>
                             <span id="dashboardHeaderMonth"></span>
                         </div>
                         <div class="user-avatar" id="userAvatar">✦</div>
@@ -135,7 +128,7 @@
                         <div class="budget-donut-row">
                             <div class="budget-donut-ring" id="dashboardBudgetRing">
                                 <div class="budget-donut-center">
-                                    <span class="budget-donut pct" id="dashboardBudgetPct">0%</span>
+                                    <span class="budget-donut-pct" id="dashboardBudgetPct">0%</span>
                                     <span class="budget-donut-label">spent</span>
                                 </div>
                             </div>
@@ -153,8 +146,9 @@
                             <circle class="motivation-cloud" cx="80" cy="50" r="32"></circle>
                             <circle class="motivation-cloud" cx="110" cy="64" r="22"></circle>
                             <ellipse class="motivation-cloud" cx="80" cy="76" rx="58" ry="18"></ellipse>
-                            <svg x="138" y="12" width="32" height="32" viewBox="0 0 24 24"></svg>
+                            <svg x="138" y="12" width="32" height="32" viewBox="0 0 24 24">
                                 <path class="motivation-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
                             <path class="motivation-sparkle" d="M34 16l2.4 7.2 7.2 2.4-7.2 2.4L34 35.2l-2.4-7.2-7.2-2.4 7.2-2.4z"></path>
                             <path class="motivation-sparkle motivation-sparkle-sm" d="M120 14l1.6 4.8 4.8 1.6-4.8 1.6-1.6 4.8-1.6-4.8-4.8-1.6 4.8-1.6z"></path>
                         </svg>
